@@ -36,7 +36,7 @@ export default function Login() {
 	};
 
 	return (
-		<section className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+		<section className="min-h-screen backdrop-blur-3xl bg-[#000000] flex items-center justify-center p-4 relative overflow-hidden">
 			<AnimatedBubbles />
 
 			<div className="bg-[var(--color-surface)] rounded-2xl shadow-xl p-8 w-full max-w-md border border-[var(--color-border)] relative z-10 backdrop-blur-sm bg-opacity-90">
@@ -71,7 +71,7 @@ export default function Login() {
 								}}
 								onBlur={() => setIsFocused(false)}
 								placeholder=" "
-								className="w-full px-4 py-3 bg-[var(--color-bg)] rounded-xl text-sm border-0 ring-1 ring-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-main)] focus:outline-none transition-all peer"
+								className="w-full px-4 py-3 text-white rounded-xl text-sm border-0 ring-1 ring-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-main)] focus:outline-none transition-all peer"
 							/>
 							<label
 								className={`absolute left-4 transition-all duration-200 pointer-events-none ${

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { FiSearch, FiCheck, FiX, FiUsers } from 'react-icons/fi';
+import { FiSearch, FiCheck, FiX } from 'react-icons/fi';
 import { incomingRequests, approveRequest, rejectRequest } from '../../api/friends.js';
-import { logout } from '../../api/auth.js';
 import NoteMessageStruct from '../NoteMessageStruct.jsx';
 
 export default function FriendRequests() {
@@ -40,35 +39,24 @@ export default function FriendRequests() {
 
     const filteredRequests = requests.filter(request =>
         request.publicKey.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    // temp
-    const logoutbtn = async () => await logout();
+    );    
 
     return (
-        <div className="bg-[var(--color-surface)] h-full overflow-y-auto border-l border-[var(--color-border)] scrollbar-hide">
-            <button onClick={logoutbtn}>logout</button>
-            <div className="p-4 border-b border-[var(--color-border)] flex items-center justify-between">
+        <div className="h-full overflow-y-auto scrollbar-hide">
+            <div className="p-4 flex items-center justify-between">
                 <div className="relative w-full">
                     <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-light)]" />
                     <input
                         type="text"
                         placeholder="Search by public key..."
-                        className="pl-10 pr-4 py-2 w-full border border-[var(--color-border)] rounded-lg text-sm"
+                        className="pl-10 pr-4 py-2 w-full border border-[var(--color-main)] rounded-lg text-sm"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
             </div>
-            <div className="p-4">
-                <NoteMessageStruct
-                    message={noteMessage}
-                    success={success}
-                    onClear={() => {
-                        setNoteMessage("");
-                        setSuccess(null);
-                    }}
-                />
+            <div>
+                <NoteMessageStruct message={noteMessage} success={success} onClear={() => { setNoteMessage(""); setSuccess(null);}} />
                 {filteredRequests.length > 0 ? (
                     <div className="space-y-4 pb-42">
                         {filteredRequests.map(request => (
@@ -105,7 +93,6 @@ export default function FriendRequests() {
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
-                        <FiUsers size={48} className="mb-4 text-[var(--color-text-light)]" />
                         <p className="text-sm text-[var(--color-text-light)]">No pending requests</p>
                     </div>
                 )}

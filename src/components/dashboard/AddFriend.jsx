@@ -47,7 +47,7 @@ export default function AddFriend() {
     };
 
     return (
-        <div className="bg-[var(--color-surface)] p-4 border-b border-[var(--color-border)]">
+        <div className="p-4">
             <h2 className="text-lg md:text-xl font-semibold text-[var(--color-text)] mb-3 flex items-center">
                 <FiUserPlus className="mr-2" /> Add Friend
             </h2>
@@ -70,13 +70,13 @@ export default function AddFriend() {
                     onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     placeholder="Enter public key"
-                    className="flex-1 border border-[var(--color-border)] rounded-l-lg px-4 py-2 text-sm md:text-base"
+                    className="flex-1 border border-[var(--color-main)] rounded-lg px-4 py-2 text-sm md:text-base"
                 />
 
                 <button
                     onClick={handleSendRequest}
                     disabled={loading}
-                    className="relative bg-[var(--color-main)] hover:bg-[var(--color-main-hover)] text-[var(--color-text-inverse)] px-4 py-2 rounded-r-lg text-sm md:text-base transition-colors flex items-center justify-center min-w-[100px] disabled:opacity-70"
+                    className="relative text-[var(--color-main)] px-4 py-2 rounded-lg text-sm md:text-base transition-colors flex items-center justify-center min-w-[100px] disabled:opacity-70"
                 >
                     {loading ? (
                         <FiLoader className="animate-spin h-5 w-5" />

@@ -23,3 +23,8 @@ export const checkAuth = async () => {
 		return false;
 	}
 }
+
+export async function getCurrentUser() {
+	const res = await API.get("/auth/me");
+	return res.data;
+}

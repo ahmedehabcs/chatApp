@@ -1,45 +1,36 @@
 @import "tailwindcss";
 
 :root {
-	--color-main: #2563eb;
-	--color-main-hover: #1d4ed8;
-	--color-main-light: #3b82f6;
-	--color-main-bg: #eff6ff;
+  --color-main: #ff4d6d;           /* neon pink */
+  --color-main-hover: #ff6f91;
+  --color-main-light: #ff9ab3;     /* glow for shapes */
 
-	--color-secondary: #9333ea;
-	--color-secondary-hover: #7e22ce;
-	--color-secondary-light: #a855f7;
-	--color-secondary-bg: #faf5ff;
+  --color-secondary: #ffb84d;      /* neon orange */
+  --color-secondary-hover: #ffc680;
+  --color-secondary-light: #ffe0a3; 
 
-	--color-bg: #f9fafb;
-	--color-bg-dark: #111827;
-	--color-surface: #ffffff;
-	--color-border: #e5e7eb;
+  --color-info: #4dffea;           /* neon cyan */
+  --color-info-bg: #0f1f1f;        
 
-	--color-text: #111827;
-	--color-text-light: #6b7280;
-	--color-text-inverse: #ffffff;
+  --color-bg: #000000;             /* black page bg */
+  --color-bg-dark: #111111;
+  --color-surface: #1a1a1a;        /* dark surfaces */
+  --color-border: #333333;
 
-	--color-success: #16a34a;
-	--color-success-bg: #dcfce7;
+  --color-text: #f5f5f5;           /* light text */
+  --color-text-light: #aaaaaa;     
+  --color-text-inverse: #000000;   
 
-	--color-error: #dc2626;
-	--color-error-bg: #fee2e2;
+  --color-success: #22c55e;        /* bright green */
+  --color-success-bg: #064e3b;
 
-	--color-warning: #d97706;
-	--color-warning-bg: #fef3c7;
+  --color-error: #ff3333;          /* bright red */
+  --color-error-bg: #4a0000;
 
-	--color-info: #0284c7;
-	--color-info-bg: #e0f2fe;
-
-	--radius-sm: 4px;
-	--radius-md: 8px;
-	--radius-lg: 12px;
-
-	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-	--shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-	--shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+  --color-warning: #ffd700;        /* gold/yellow */
+  --color-warning-bg: #4a3b00;
 }
+
 
 * {
 	outline: none;
@@ -62,6 +53,17 @@
 *::-webkit-scrollbar-track {
 	background-color: var(--game-card);
 }
+/* Hide scrollbar for all browsers */
+.scrollbar-none {
+  /* For Chrome, Edge, Safari */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
 
 /* Base animations */
 @keyframes move-bg-1 {

@@ -36,7 +36,7 @@ export default function Register() {
 	};
 
 	return (
-		<section className="h-screen flex items-center justify-center p-4 relative overflow-hidden">
+		<section className="h-screen backdrop-blur-3xl bg-[#000000] flex items-center justify-center p-4 relative overflow-hidden">
 			{/* Animated Gradient Background */}
 			<AnimatedBubbles />
 
@@ -143,12 +143,13 @@ export default function Register() {
 										navigator.clipboard.writeText(user.publicKey);
 										setCopiedKey("public");
 									}}
-									className="w-full p-4 bg-[var(--color-bg)] rounded-xl text-sm font-mono cursor-pointer transition-all hover:bg-[var(--color-main-bg)]/30 relative overflow-hidden"
+									className="w-full p-4 bg-[var(--color-bg)] rounded-xl text-sm font-mono cursor-pointer transition-all relative overflow-hidden"
 								>
-									<div className="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--color-main-bg)]/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-									<div className="relative break-all pr-6">
+									<div className="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--color-main-bg)]/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+									<div className="relative break-all pr-6 text-[var(--color-main)] font-medium">
 										{user.publicKey}
 									</div>
+									<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--color-main)] opacity-0 group-hover:opacity-100 transition-opacity"></div>
 								</div>
 							</div>
 
@@ -186,7 +187,7 @@ export default function Register() {
 										navigator.clipboard.writeText(user.privateKey);
 										setCopiedKey("private");
 									}}
-									className="w-full p-4 bg-[var(--color-bg)] rounded-xl text-sm font-mono cursor-pointer transition-all hover:bg-[var(--color-main-bg)]/30 relative overflow-hidden"
+									className="w-full p-4 bg-[var(--color-bg)] rounded-xl text-sm font-mono cursor-pointer transition-all relative overflow-hidden"
 								>
 									<div className="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--color-main-bg)]/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 									<div className="relative break-all pr-6 text-[var(--color-main)] font-medium">

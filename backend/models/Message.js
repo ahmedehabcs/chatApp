@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 const messageSchema = new mongoose.Schema(
 	{
 		chatId: { type: String, require: true },
-		messageContent: { type: String, require: true },
-		messageSender: { type: String, require: true },
+		sender: { type: String, require: true },
+		text: { type: String, require: true },
 	},
 	{ timestamps: true }
 );

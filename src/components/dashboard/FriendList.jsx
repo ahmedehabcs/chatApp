@@ -47,11 +47,17 @@ export default function FriendList({ onSelectFriend, selectedFriend, setSelected
     );
 
     return (
-        <div className={`bg-[var(--color-surface)] h-full flex flex-col border-r border-[var(--color-border)] ${showChat ? 'hidden lg:block' : 'block'}`}>
-            <div className="p-4 border-b border-[var(--color-border)] flex-shrink-0">
+        <div className={`relative h-full flex flex-col ${showChat ? 'hidden lg:block' : 'block'}`}>
+            <div className="p-4 flex items-center justify-between">
                 <div className="relative w-full">
                     <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-light)]" />
-                    <input type="text" placeholder="Search by public key..." className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg text-sm w-full" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}/>
+                    <input
+                        type="text"
+                        placeholder="Search by public key..."
+                        className="pl-10 pr-4 py-2 w-full border border-[var(--color-main)] rounded-lg text-sm"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
             </div>
             <div className="flex-1 min-h-0 overflow-hidden pb-42">

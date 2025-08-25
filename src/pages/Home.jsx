@@ -20,7 +20,7 @@ export default function LandingPage() {
 	const navigate = useNavigate();
 
 	return (
-		<div className="min-h-screen text-[var(--color-text)]">
+		<div className="min-h-screen backdrop-blur-3xl bg-[#000000] text-[var(--color-text)]">
 			{/* Hero Section */}
 			<section className="relative h-screen flex items-center justify-center overflow-hidden">
 				<AnimatedBubbles />
@@ -201,7 +201,7 @@ export default function LandingPage() {
 			</section>
 
 			{/* CTA Section */}
-			<section className="py-20 bg-[var(--color-bg-dark)] text-[var(--color-text-inverse)] relative overflow-hidden">
+			<section className="py-20 bg-[var(--color-bg-dark)]  relative overflow-hidden">
 				<AnimatedGrid />
 				<div className="container mx-auto px-6 z-10">
 					<div className="max-w-4xl mx-auto text-center">
