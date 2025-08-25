@@ -1,76 +1,49 @@
 import { Server } from "socket.io";
-import Message from "../models/Message.js";
-import sanitizeHtml from "sanitize-html";
 import Chat from "../models/Chat.js";
-
-let io = null;
+import Message from "../models/Message.js";
 
 export const initSocket = (server) => {
-	io = new Server(server, {
-		cors: {
-			origin: process.env.FRONTEND_URL || "http://localhost:3000",
-			methods: ["GET", "POST"],
-			credentials: true
-		},
-	});
+    const io = new Server(server, {
+        cors: {
+            origin: [process.env.WEBSITE_DOMAIN],
+            credentials: true,
+        }
+    });
 
-	io.on("connection", (socket) => {
-		console.log("🔌 New client connected:", socket.id);
+    // Auth middleware
+    io.use((socket, next) => {
+        const { publicKey } = socket.handshake.auth;
+        if (!publicKey) return next(new Error("Authentication error"));
+        socket.userPublicKey = publicKey;
+        next();
+    });
 
-		// Join personal room by publicKey
-		socket.on("join", (publicKey) => {
-			socket.join(publicKey);
-			console.log(`${publicKey} joined room`);
-		});
+    io.on("connection", (socket) => {
+        // Join a chat room
+        socket.on("joinChat", async ({ otherPublicKey }) => {
+            const userpk = socket.userPublicKey;
+            let chat = await Chat.findOne({ participants: { $all: [userpk, otherPublicKey] } });
 
-		// Handle sending messages via socket
-		socket.on("send_message", async (data) => {
-			try {
-				const { sender, receiver, text } = data;
+            if (!chat) {
+                chat = new Chat({ participants: [userpk, otherPublicKey] });
+                await chat.save();
+            }
 
-				// Find or create chat
-				let chat = await Chat.findOne({
-					participants: { $all: [sender, receiver] }
-				});
+            socket.join(chat.chatId);
+        });
 
-				if (!chat) {
-					// Create new chat if it doesn't exist
-					chat = new Chat({
-						participants: [sender, receiver]
-					});
-					await chat.save();
-				}
+        // Handle sending messages
+        socket.on("sendMessage", async ({ chatId, text }) => {
+            const sender = socket.userPublicKey;
+            if (!chatId || !text) return;
 
-				// Save message to database
-				const newMessage = new Message({
-					chatId: chat.chatId,
-					sender: sender,
-					text: sanitizeHtml(text.trim(), {
-						allowedTags: [],
-						allowedAttributes: {},
-					}),
-				});
+            const newMessage = new Message({ chatId, sender, text });
+            await newMessage.save();
 
-				await newMessage.save();
-
-				// FIX: Emit only to the specific users (not to all connected clients)
-				// Send to sender in their room and receiver in their room
-				io.to(sender).emit("receive_message", newMessage);
-				io.to(receiver).emit("receive_message", newMessage);
-
-			} catch (error) {
-				console.error("Error sending message:", error);
-				socket.emit("message_error", { error: "Failed to send message" });
-			}
-		});
-
-		socket.on("disconnect", () => {
-			console.log("❌ Client disconnected:", socket.id);
-		});
-	});
-};
-
-export const getIO = () => {
-	if (!io) throw new Error("Socket.io not initialized!");
-	return io;
+            io.to(chatId).emit("newMessage", newMessage);
+        });
+        socket.on("disconnect", () => {
+            console.log("Socket disconnected:", socket.userPublicKey);
+        });
+    });
 };

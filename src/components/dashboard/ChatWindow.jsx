@@ -1,18 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { FiArrowLeft, FiSend, FiMessageSquare } from 'react-icons/fi';
-import { sendMessage, getMessage } from "../../api/messages.js";
+import { getMessage } from "../../api/messages.js";
 import NoteMessageStruct from '../NoteMessageStruct.jsx';
 import useAuth from "../../hooks/useAuth.jsx";
+import useSocket from '../../hooks/useSocket.jsx';
 
 export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat, setShowChat }) {
     const [newMessage, setNewMessage] = useState('');
     const [messages, setMessages] = useState([]);
     const [noteMessage, setNoteMessage] = useState();
     const [success, setSuccess] = useState(null);
-    const counter = useRef(2);
     const textareaRef = useRef(null);
     const messagesEndRef = useRef(null);
     const { user: myPublicKey } = useAuth();
+
+    const socketRef = useSocket(myPublicKey);
+    const [currentChatId, setCurrentChatId] = useState(null);
+
 
     /* non changable functions */
     useEffect(() => {
@@ -50,44 +54,75 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
 
 
 
-    const handleSendMessage = async () => {
-        try {
-            const res = await sendMessage(selectedFriend, newMessage);
-            setNewMessage('');
-            handleGetMessage();
-            setSuccess(null);
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        } catch (error) {
-            setNoteMessage(error.response?.data?.message || `Failed to send messages`);
-            setSuccess(false);
-        }
-    };
+    // const handleSendMessage = async () => {
+    //     try {
+    //         const res = await sendMessage(selectedFriend, newMessage);
+    //         setNewMessage('');
+    //         handleGetMessage();
+    //         setSuccess(null);
+    //         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    //     } catch (error) {
+    //         setNoteMessage(error.response?.data?.message || `Failed to send messages`);
+    //         setSuccess(false);
+    //     }
+    // };
+    // const handleGetMessage = async () => {
+    //     if (!selectedFriend) return;
+    //     try {
+    //         const res = await getMessage(selectedFriend);
+    //         if (counter.current !== res.messages.length) {
+    //             counter.current = res.messages.length;
+    //             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    //         }
+    //         setMessages(res.messages);
+    //         setSuccess(null);
+    //     } catch (error) {
+    //         setNoteMessage(error.response?.data?.message || `Failed to get messages`);
+    //         setSuccess(false);
+    //     }
+    // };
+    // useEffect(() => {
+    //     if (!selectedFriend) return;
+    //     setMessages([]);
+    //     const interval = setInterval(() => {
+    //         handleGetMessage();
+    //     }, 1000);
+    //     return () => clearInterval(interval);
+    // }, [selectedFriend]);
 
-    const handleGetMessage = async () => {
-        if (!selectedFriend) return;
-        try {
-            const res = await getMessage(selectedFriend);
-            if (counter.current !== res.messages.length) {
-                counter.current = res.messages.length;
-                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }
-            setMessages(res.messages);
-            setSuccess(null);
-        } catch (error) {
-            setNoteMessage(error.response?.data?.message || `Failed to get messages`);
-            setSuccess(false);
-        }
-    };
 
+    const handleSendMessage = () => {
+        if (!newMessage.trim() || !currentChatId) return;
+        socketRef.current.emit("sendMessage", { chatId: currentChatId, text: newMessage.trim()});
+        setNewMessage('');
+    };
 
     useEffect(() => {
-        if (!selectedFriend) return;
-        setMessages([]);
-        const interval = setInterval(() => {
-            handleGetMessage();
-        }, 1000);
-        return () => clearInterval(interval);
+        if (!selectedFriend || !socketRef.current) return;
+        const socket = socketRef.current;
+        const joinChatRoom = async () => {
+            try {
+                const res = await getMessage(selectedFriend);
+                setMessages(res.messages);
+                setCurrentChatId(res.chat);
+                socket.emit("joinChat", { otherPublicKey: selectedFriend });
+            } catch (err) {
+                console.error("Failed to join chat:", err);
+            }
+        };
+        joinChatRoom();
+        const handleNewMessage = (msg) => {
+            setMessages(prev => [...prev, msg]);
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        };
+        socket.on("newMessage", handleNewMessage);
+        return () => {
+            socket.off("newMessage", handleNewMessage);
+        };
     }, [selectedFriend]);
+
+
+
 
 
     return (
@@ -114,9 +149,9 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 p-4 overflow-y-auto pb-12 scrollbar-none">
+                    <div className="flex-1 p-4 overflow-y-auto pb-12 scrollbar-none flex flex-col-reverse">
                         {messages.length > 0 ? (
-                            messages.map((message, index) => (
+                            [...messages].reverse().map((message, index) => (
                                 <div key={index} className={`flex ${message.sender === myPublicKey ? 'justify-end' : 'justify-start'} mb-4`}>
                                     <div
                                         className={`max-w-xs md:max-w-md rounded-lg p-3 text-sm md:text-base ${message.sender === myPublicKey

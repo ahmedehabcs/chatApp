@@ -9,7 +9,6 @@ export default function useAuth() {
     const getCurrentUser = async () => {
       try {
         const res = await API.get('/auth/me');
-        console.log("useAuth", res.data.user.publicKey);
         setUser(res.data.user.publicKey);
       } catch (error) {
         console.error('Failed to get current user:', error);

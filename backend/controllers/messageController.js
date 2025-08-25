@@ -3,7 +3,7 @@ import Message from "../models/Message.js";
 import handleSendErrors from "../utils/handleSendErrors.js";
 import sanitizeHtml from "sanitize-html";
 
-// POST /api/message/send
+// POST /api/message/send #### can be used for extra support if socket is not working!
 export const sendMessage = async (req, res, next) => {
     try {
         const userpk = req.user.publicKey;
@@ -55,7 +55,7 @@ export const getMessage = async (req, res, next) => {
             return handleSendErrors("No chat exists between these users", false, 404, next);
         }
         const messages = await Message.find({ chatId: chat.chatId }).sort({ createdAt: 1 });
-        return res.json({ success: true, messages });
+        return res.json({ success: true, chat: chat.chatId, messages });
     } catch (error) {
         handleSendErrors(error.message || "Internal server error", false, 500, next);
     }
