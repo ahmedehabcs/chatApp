@@ -56,7 +56,7 @@ export default function FriendList({ onSelectFriend, selectedFriend, setSelected
                             <div key={friend.publicKey} className={`p-4 flex items-center justify-between cursor-pointer hover:bg-[var(--color-main-bg)] transition-all duration-200 ${selectedFriend === friend.publicKey ? 'bg-[var(--color-main-bg)]' : ''}`} onClick={() => onSelectFriend(friend)}>
                                 <div className="flex items-center">
                                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--color-main)] flex items-center justify-center text-[var(--color-text-inverse)] font-semibold text-sm md:text-base">
-                                        {friend.nickname.substring(0, 2).toUpperCase()}
+                                        {(friend.nickname ?? friend.publicKey).substring(0, 2).toUpperCase()}
                                     </div>
                                     <div className="ml-3">
                                         <h3 className="text-sm md:text-base font-medium text-[var(--color-text)] font-mono">{friend.nickname ?? friend.publicKey}</h3>

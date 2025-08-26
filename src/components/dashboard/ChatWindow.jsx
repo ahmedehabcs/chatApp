@@ -54,7 +54,7 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
 
     const handleSendMessage = () => {
         if (!newMessage.trim() || !currentChatId) return;
-        socketRef.current.emit("sendMessage", { chatId: currentChatId, text: newMessage.trim()});
+        socketRef.current.emit("sendMessage", { chatId: currentChatId, text: newMessage.trim() });
         setNewMessage('');
     };
 
@@ -97,7 +97,7 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
                                 <FiArrowLeft size={20} />
                             </button>
                             <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--color-main)] flex items-center justify-center text-[var(--color-text-inverse)] font-semibold text-sm md:text-base">
-                                {selectedFriend.substring(0, 2).toUpperCase()}
+                                {(selectedFriend.nickname ?? selectedFriend.publicKey).substring(0, 2).toUpperCase()}
                             </div>
                             <h3 className="text-sm md:text-base font-medium text-[var(--color-text)] font-mono truncate">
                                 {selectedFriend.nickname ?? selectedFriend.publicKey}
@@ -110,20 +110,34 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 p-4 overflow-y-auto pb-12 scrollbar-none flex flex-col-reverse">
+                    <div className="flex-1 p-4 overflow-y-auto pb-15 scrollbar-none flex flex-col">
                         {messages.length > 0 ? (
-                            [...messages].reverse().map((message, index) => (
-                                <div key={index} className={`flex ${message.sender === myPublicKey ? 'justify-end' : 'justify-start'} mb-4`}>
+                            messages.map((message, index) => {
+                                const time = new Date(message.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+
+                                return (
                                     <div
-                                        className={`max-w-xs md:max-w-md rounded-lg p-3 text-sm md:text-base ${message.sender === myPublicKey
-                                            ? 'bg-[var(--color-main)] text-[var(--color-text-inverse)] rounded-br-none'
-                                            : 'bg-[var(--color-surface)] text-[var(--color-text)] rounded-bl-none border border-[var(--color-border)]'
-                                            }`}
+                                        key={index}
+                                        className={`flex ${message.sender === myPublicKey ? "justify-end" : "justify-start"
+                                            } mb-4`}
                                     >
-                                        {message.text}
+                                        <div
+                                            className={`max-w-xs md:max-w-md rounded-lg p-2 text-sm md:text-base break-words whitespace-pre-wrap ${message.sender === myPublicKey
+                                                    ? "bg-[var(--color-main)] text-[var(--color-text-inverse)] rounded-br-none"
+                                                    : "bg-[var(--color-surface)] text-[var(--color-text)] rounded-bl-none border border-[var(--color-border)]"
+                                                }`}
+                                        >
+                                            <p>{message.text}</p>
+                                            <span
+                                                className={`block text-[10px] text-[var(--color-text-light)] mt-1 ${message.sender === myPublicKey ? "text-right" : "text-left"
+                                                    }`}
+                                            >
+                                                {time}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-light)] p-4 text-center">
                                 <h3 className="text-lg md:text-xl font-medium mb-2 text-[var(--color-text)]">
@@ -133,6 +147,10 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
                         )}
                         <div ref={messagesEndRef} />
                     </div>
+
+
+
+
 
                     {/* Input */}
                     <div className="p-4">

@@ -6,12 +6,8 @@ export default function useSocket(publicKey) {
 
     useEffect(() => {
         if (!publicKey) return;
-        socketRef.current = io("http://localhost:3000", {
+        socketRef.current = io("https://h1zslq1r-3000.euw.devtunnels.ms", {
             auth: { publicKey },
-        });
-
-        socketRef.current.on("connect", () => {
-            console.log("Socket connected:", socketRef.current.id);
         });
 
         return () => {
