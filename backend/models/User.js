@@ -5,7 +5,8 @@ const userSchema = new mongoose.Schema({
 
 	// accepted
 	friends: [
-		{
+		{	
+			nickname: String,
 			publicKey: String,
 		},
 	],

@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { FiSearch, FiCheck, FiX } from 'react-icons/fi';
+import { FiCheck, FiX } from 'react-icons/fi';
 import { incomingRequests, approveRequest, rejectRequest } from '../../api/friends.js';
 import NoteMessageStruct from '../NoteMessageStruct.jsx';
 
 export default function FriendRequests() {
-    const [searchQuery, setSearchQuery] = useState('');
     const [requests, setRequests] = useState([]);
     const [noteMessage, setNoteMessage] = useState("");
     const [success, setSuccess] = useState(null);
@@ -15,7 +14,6 @@ export default function FriendRequests() {
             const res = await incomingRequests();
             setRequests(res.incomingRequests);
         } catch (error) {
-            console.log(error);
             setNoteMessage(error.response?.data?.message || "sth went wrong");
         }
     }
@@ -34,32 +32,15 @@ export default function FriendRequests() {
             setNoteMessage( error.response?.data?.message || `Failed to ${action === "approve" ? "approve" : "reject"} request`);
             setSuccess(false);
         }
-    };
-
-
-    const filteredRequests = requests.filter(request =>
-        request.publicKey.toLowerCase().includes(searchQuery.toLowerCase())
-    );    
+    };   
 
     return (
         <div className="h-full overflow-y-auto scrollbar-hide">
-            <div className="p-4 flex items-center justify-between">
-                <div className="relative w-full">
-                    <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-light)]" />
-                    <input
-                        type="text"
-                        placeholder="Search by public key..."
-                        className="pl-10 pr-4 py-2 w-full border border-[var(--color-main)] rounded-lg text-sm"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-            </div>
-            <div>
+            <div> 
                 <NoteMessageStruct message={noteMessage} success={success} onClear={() => { setNoteMessage(""); setSuccess(null);}} />
-                {filteredRequests.length > 0 ? (
+                {requests.length > 0 ? (
                     <div className="space-y-4 pb-42">
-                        {filteredRequests.map(request => (
+                        {requests.map(request => (
                             <div key={request.id} className="p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)]">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center">
@@ -72,18 +53,10 @@ export default function FriendRequests() {
                                         </div>
                                     </div>
                                     <div className="flex space-x-2">
-                                        <button
-                                            onClick={() => handleRequest(request.publicKey, "approve")}
-                                            className="bg-[var(--color-success)] hover:bg-[#15803d] text-[var(--color-text-inverse)] p-2 rounded-full transition-colors"
-                                            title="Approve request"
-                                        >
+                                        <button onClick={() => handleRequest(request.publicKey, "approve")} className="bg-[var(--color-success)] hover:bg-[#15803d] text-[var(--color-text-inverse)] p-2 rounded-full transition-colors" title="Approve request">
                                             <FiCheck size={16} />
                                         </button>
-                                        <button
-                                            onClick={() => handleRequest(request.publicKey, "reject")}
-                                            className="bg-[var(--color-error)] hover:bg-[#b91c1c] text-[var(--color-text-inverse)] p-2 rounded-full transition-colors"
-                                            title="Reject request"
-                                        >
+                                        <button onClick={() => handleRequest(request.publicKey, "reject")} className="bg-[var(--color-error)] hover:bg-[#b91c1c] text-[var(--color-text-inverse)] p-2 rounded-full transition-colors" title="Reject request">
                                             <FiX size={16} />
                                         </button>
                                     </div>

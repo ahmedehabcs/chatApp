@@ -24,7 +24,7 @@ export async function rejectRequest(userRejectedPublicKey){
     return res.data;
 }
 
-// reject request
+// list friends
 export async function listFriends(){
     const res = await API.get("/friends/list");
     return res.data;
@@ -33,6 +33,12 @@ export async function listFriends(){
 // remove friend
 export async function removeFriend(friendPublicKey){
     const res = await API.post("/friends/unfriend", { friendPublicKey });
+    return res.data;
+}
+
+// name friend
+export async function nicknameApi(friendPublicKey, nickname){
+    const res = await API.post("/friends/nickname", { friendPublicKey, nickname });
     return res.data;
 }
 

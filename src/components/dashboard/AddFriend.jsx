@@ -18,7 +18,6 @@ export default function AddFriend() {
             const res = await outgoingRequest(cleanPK);
             setNoteMessage(res.message);
             setSuccess(res.success);
-            console.log(success);
             if (res.success) {
                 setTimeout(() => {
                     setNoteMessage("");
@@ -26,7 +25,6 @@ export default function AddFriend() {
                 }, 5000);
             }
         } catch (error) {
-            console.log(error);
             setNoteMessage(error.response?.data?.message || "Something went wrong");
             setSuccess(false);
         } finally {
