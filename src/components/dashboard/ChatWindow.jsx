@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
-import { FiArrowLeft, FiSend, FiMessageSquare } from 'react-icons/fi';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { getMessage } from "../../api/messages.js";
-import NoteMessageStruct from '../NoteMessageStruct.jsx';
 import useAuth from "../../hooks/useAuth.jsx";
 import useSocket from '../../hooks/useSocket.jsx';
+import ChatHeader from './chat/ChatHeader.jsx';
+import MessageInput from './chat/MessageInput.jsx';
+import MessageBubble from './chat/MessageBubble.jsx';
+import { EmptyChatState, NoMessagesState } from './chat/EmptyState.jsx';
 
 export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat, setShowChat }) {
     const [newMessage, setNewMessage] = useState('');
@@ -17,7 +19,7 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
     const socketRef = useSocket(myPublicKey);
     const [currentChatId, setCurrentChatId] = useState(null);
 
-    /* non changable functions */
+    /* Non-changeable functions */
     useEffect(() => {
         const handleBrowserBack = (event) => {
             if (showChat) {
@@ -25,10 +27,12 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
                 window.history.pushState(null, '', window.location.pathname);
             }
         };
+        
         window.addEventListener('popstate', handleBrowserBack);
         if (showChat) {
             window.history.pushState({ chatOpen: true }, '');
         }
+        
         return () => {
             window.removeEventListener('popstate', handleBrowserBack);
             if (showChat && window.history.state?.chatOpen) {
@@ -36,28 +40,38 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
             }
         };
     }, [showChat]);
-    const handleBackToFriends = () => {
+
+    const handleBackToFriends = useCallback(() => {
         setShowChat(false);
         setSelectedFriend(null);
         if (window.history.state?.chatOpen) {
             window.history.back();
         }
-    };
-    const handleKeyDown = (e) => {
+    }, [setShowChat, setSelectedFriend]);
+
+    const handleKeyDown = useCallback((e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSendMessage();
         }
-    };
-    /* non changable functions */
+    }, [newMessage, currentChatId]);
 
+    const scrollToBottom = useCallback(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, []);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = useCallback(() => {
         if (!newMessage.trim() || !currentChatId) return;
         socketRef.current.emit("sendMessage", { chatId: currentChatId, text: newMessage.trim() });
         setNewMessage('');
-    };
+    }, [newMessage, currentChatId, socketRef]);
 
+    const onClearNoteMessage = useCallback(() => {
+        setNoteMessage("");
+        setSuccess(null);
+    }, []);
+
+    /* Socket and message handling */
     useEffect(() => {
         if (!selectedFriend || !socketRef.current) return;
         const socket = socketRef.current;
@@ -67,6 +81,7 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
                 setMessages(res.messages);
                 setCurrentChatId(res.chat);
                 socket.emit("joinChat", { otherPublicKey: selectedFriend.publicKey });
+                setTimeout(scrollToBottom, 100);
             } catch (err) {
                 console.error("Failed to join chat:", err);
             }
@@ -74,115 +89,42 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
         joinChatRoom();
         const handleNewMessage = (msg) => {
             setMessages(prev => [...prev, msg]);
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            setTimeout(scrollToBottom, 100);
         };
         socket.on("newMessage", handleNewMessage);
         return () => {
             socket.off("newMessage", handleNewMessage);
         };
-    }, [selectedFriend]);
+    }, [selectedFriend, socketRef, scrollToBottom]);
 
-
-
-
+    if (!selectedFriend) {
+        return (
+            <div className={`flex flex-col h-full ${showChat ? 'block w-full' : 'hidden lg:block w-full'}`}>
+                <EmptyChatState />
+            </div>
+        );
+    }
 
     return (
         <div className={`flex flex-col h-full ${showChat ? 'block w-full' : 'hidden lg:block w-full'}`}>
-            {selectedFriend ? (
-                <>
-                    {/* Header */}
-                    <div className="p-4 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                            <button onClick={handleBackToFriends} className="lg:hidden p-2 text-[var(--color-text-light)] hover:bg-[var(--color-main-bg)] rounded-full transition-colors" title="Back to friends list" >
-                                <FiArrowLeft size={20} />
-                            </button>
-                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--color-main)] flex items-center justify-center text-[var(--color-text-inverse)] font-semibold text-sm md:text-base">
-                                {(selectedFriend.nickname ?? selectedFriend.publicKey).substring(0, 2).toUpperCase()}
-                            </div>
-                            <h3 className="text-sm md:text-base font-medium text-[var(--color-text)] font-mono truncate">
-                                {selectedFriend.nickname ?? selectedFriend.publicKey}
-                            </h3>
-                        </div>
-                        {/* Right Section: Status/NoteMessage */}
-                        <div className="flex-shrink-0">
-                            <NoteMessageStruct message={noteMessage} success={success} onClear={() => { setNoteMessage(""); setSuccess(null); }} />
-                        </div>
-                    </div>
+            <ChatHeader selectedFriend={selectedFriend} handleBackToFriends={handleBackToFriends} noteMessage={noteMessage} success={success} onClearNoteMessage={onClearNoteMessage} />
 
-                    {/* Messages */}
-                    <div className="flex-1 p-4 overflow-y-auto pb-15 scrollbar-none flex flex-col">
-                        {messages.length > 0 ? (
-                            messages.map((message, index) => {
-                                const time = new Date(message.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
-
-                                return (
-                                    <div
-                                        key={index}
-                                        className={`flex ${message.sender === myPublicKey ? "justify-end" : "justify-start"
-                                            } mb-4`}
-                                    >
-                                        <div
-                                            className={`max-w-xs md:max-w-md rounded-lg p-2 text-sm md:text-base break-words whitespace-pre-wrap ${message.sender === myPublicKey
-                                                    ? "bg-[var(--color-main)] text-[var(--color-text-inverse)] rounded-br-none"
-                                                    : "bg-[var(--color-surface)] text-[var(--color-text)] rounded-bl-none border border-[var(--color-border)]"
-                                                }`}
-                                        >
-                                            <p>{message.text}</p>
-                                            <span
-                                                className={`block text-[10px] text-[var(--color-text-light)] mt-1 ${message.sender === myPublicKey ? "text-right" : "text-left"
-                                                    }`}
-                                            >
-                                                {time}
-                                            </span>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        ) : (
-                            <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-light)] p-4 text-center">
-                                <h3 className="text-lg md:text-xl font-medium mb-2 text-[var(--color-text)]">
-                                    No chat found!
-                                </h3>
-                            </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
-
-
-
-
-
-                    {/* Input */}
-                    <div className="p-4">
-                        <div className="flex items-end">
-                            <div className="flex-1 relative">
-                                <textarea
-                                    ref={textareaRef}
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    onKeyDown={window.innerWidth >= 768 ? handleKeyDown : undefined}
-                                    placeholder="Type your message..."
-                                    className="w-full border border-[var(--color-main)] rounded-xl px-4 py-3 pr-12 text-sm resize-none transition-all duration-200 min-h-[44px] max-h-[120px] overflow-hidden"
-                                    rows={1}
-                                />
-                                <button onClick={handleSendMessage} className="absolute right-[7px] bottom-3 bg-[var(--color-main)] hover:bg-[var(--color-main-hover)] text-[var(--color-text-inverse)] p-2 rounded-full transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--color-main)] shadow-md flex items-center justify-center w-8 h-8" title="send message">
-                                    <FiSend className="h-5 w-5" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </>
-            ) : (
-                <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-light)] p-4 text-center">
-                    <FiMessageSquare size={48} className="mb-4 text-[var(--color-main-light)]" />
-                    <h3 className="text-lg md:text-xl font-medium mb-2 text-[var(--color-text)]">
-                        Select a friend to start chatting
-                    </h3>
-                    <p className="text-sm md:text-base">
-                        Choose a conversation from your friends list to begin messaging
-                    </p>
-                </div>
-            )}
+            {/* Messages */}
+            <div className="flex-1 p-4 overflow-y-auto pb-15 scrollbar-none flex flex-col">
+                {messages.length > 0 ? (
+                    messages.map((message, index) => {
+                        const time = new Date(message.createdAt).toLocaleTimeString([], {  hour: "numeric",  minute: "2-digit",  hour12: true });
+                        const isOwnMessage = message.sender === myPublicKey;
+                        return (
+                            <MessageBubble key={index} message={message} isOwnMessage={isOwnMessage} time={time} />
+                        );
+                    })
+                ) : (
+                    <NoMessagesState />
+                )}
+                <div ref={messagesEndRef} />
+            </div>
+            <MessageInput newMessage={newMessage} setNewMessage={setNewMessage} handleSendMessage={handleSendMessage} handleKeyDown={handleKeyDown} textareaRef={textareaRef} />
         </div>
     );
 }
