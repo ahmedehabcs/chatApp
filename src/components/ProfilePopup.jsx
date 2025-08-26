@@ -1,17 +1,57 @@
-import { FiUser, FiCopy, FiX, FiLogOut } from 'react-icons/fi';
+import { useState, useRef } from 'react';
+import { FiUser, FiX, FiLogOut, FiShare2, FiDownload } from 'react-icons/fi';
+import { QRCodeSVG } from 'qrcode.react';
 import useAuth from '../hooks/useAuth.jsx';
-import { logout } from "../api/auth.js"
+import { logout } from "../api/auth.js";
 
-export default function ProfilePopup ({ showProfile, setShowProfile, onLogout }){
+export default function ProfilePopup({ showProfile, setShowProfile }) {
     const { user: publicKey } = useAuth();
+    const [activeTab, setActiveTab] = useState('key'); // 'key' or 'qr'
+    const qrRef = useRef();
 
     const logoutbtn = async () => {
         const confirmed = window.confirm("Are you sure you want to logout!");
         if (!confirmed) return;
         await logout();
         window.location.reload();
-    }
-    
+    };
+
+    const handleShareKey = async () => {
+        const shareData = {
+            title: 'My Public Key',
+            text: 'Add me as a friend on Secure Chat!',
+            url: `${window.location.origin}/api/friends/request/${encodeURIComponent(publicKey)}`
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(shareData.url);
+                alert('Share link copied to clipboard!');
+            }
+        } catch (err) {
+            console.log('Error sharing:', err);
+        }
+    };
+
+    const downloadQRCode = () => {
+        if (!qrRef.current) return;
+        
+        const svg = qrRef.current;
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const blob = new Blob([svgData], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "secure-chat-qr.svg";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     if (!showProfile) return null;
 
     return (
@@ -26,26 +66,76 @@ export default function ProfilePopup ({ showProfile, setShowProfile, onLogout })
                 </p>
             </div>
 
+            {/* Tab Navigation */}
+            <div className="flex border-b border-[var(--color-border)]">
+                <button
+                    onClick={() => setActiveTab('key')}
+                    className={`flex-1 py-2 text-sm font-medium ${
+                        activeTab === 'key' 
+                            ? 'text-[var(--color-main)] border-b-2 border-[var(--color-main)]' 
+                            : 'text-[var(--color-text-light)] hover:text-[var(--color-text)]'
+                    }`}
+                >
+                    Public Key
+                </button>
+                <button
+                    onClick={() => setActiveTab('qr')}
+                    className={`flex-1 py-2 text-sm font-medium ${
+                        activeTab === 'qr' 
+                            ? 'text-[var(--color-main)] border-b-2 border-[var(--color-main)]' 
+                            : 'text-[var(--color-text-light)] hover:text-[var(--color-text)]'
+                    }`}
+                >
+                    QR Code
+                </button>
+            </div>
+
             <div className="p-4">
-                <div className="mb-3">
-                    <label className="text-xs font-medium text-[var(--color-text-light)] block mb-1">
-                        YOUR PUBLIC KEY
-                    </label>
-                    <div className="relative">
-                        <p className="text-sm text-[var(--color-text)] break-all p-3 bg-[var(--color-bg-dark)] rounded border border-[var(--color-border)] font-mono overflow-x-auto">
-                            {publicKey}
-                        </p>
-                        <button
-                            onClick={() => {
-                                navigator.clipboard.writeText(publicKey);
-                            }}
-                            className="absolute top-2 right-2 p-1 text-[var(--color-text-light)] hover:text-[var(--color-main)] transition-colors"
-                            title="Copy to clipboard"
-                        >
-                            <FiCopy size={14} />
-                        </button>
+                {activeTab === 'key' ? (
+                    <div className="mb-3">
+                        <label className="text-xs font-medium text-[var(--color-text-light)] block mb-1">
+                            YOUR PUBLIC KEY
+                        </label>
+                        <div className="relative">
+                            <p className="text-sm text-[var(--color-text)] break-all p-3 bg-[var(--color-bg-dark)] rounded border border-[var(--color-border)] font-mono overflow-x-auto">
+                                {publicKey}
+                            </p>
+                            <div className="absolute top-2 right-2 flex gap-1">
+                                <button
+                                    onClick={handleShareKey}
+                                    className="p-1 text-[var(--color-text-light)] hover:text-[var(--color-main)] transition-colors"
+                                    title="Share public key"
+                                >
+                                    <FiShare2 size={14} />
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="mb-3">
+                        <label className="text-xs font-medium text-[var(--color-text-light)] block mb-2 text-center">
+                            SCAN TO ADD ME
+                        </label>
+                        <div className="flex flex-col items-center">
+                            <div className="p-4 bg-white rounded-lg border border-[var(--color-border)]">
+                                <QRCodeSVG
+                                    ref={qrRef}
+                                    value={publicKey}
+                                    size={160}
+                                    level="M"
+                                    includeMargin={true}
+                                />
+                            </div>
+                            <button
+                                onClick={downloadQRCode}
+                                className="mt-3 px-3 py-1 text-xs bg-[var(--color-surface)] text-[var(--color-text-light)] hover:text-[var(--color-main)] border border-[var(--color-border)] rounded-md flex items-center gap-1 transition-colors"
+                            >
+                                <FiDownload size={12} />
+                                Download QR
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Logout Button */}
                 <button
@@ -67,4 +157,4 @@ export default function ProfilePopup ({ showProfile, setShowProfile, onLogout })
             </div>
         </div>
     );
-};
+}
