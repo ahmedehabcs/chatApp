@@ -17,7 +17,6 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
     const socketRef = useSocket(myPublicKey);
     const [currentChatId, setCurrentChatId] = useState(null);
 
-
     /* non changable functions */
     useEffect(() => {
         const handleBrowserBack = (event) => {
@@ -53,44 +52,6 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
     /* non changable functions */
 
 
-
-    // const handleSendMessage = async () => {
-    //     try {
-    //         const res = await sendMessage(selectedFriend, newMessage);
-    //         setNewMessage('');
-    //         handleGetMessage();
-    //         setSuccess(null);
-    //         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    //     } catch (error) {
-    //         setNoteMessage(error.response?.data?.message || `Failed to send messages`);
-    //         setSuccess(false);
-    //     }
-    // };
-    // const handleGetMessage = async () => {
-    //     if (!selectedFriend) return;
-    //     try {
-    //         const res = await getMessage(selectedFriend);
-    //         if (counter.current !== res.messages.length) {
-    //             counter.current = res.messages.length;
-    //             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    //         }
-    //         setMessages(res.messages);
-    //         setSuccess(null);
-    //     } catch (error) {
-    //         setNoteMessage(error.response?.data?.message || `Failed to get messages`);
-    //         setSuccess(false);
-    //     }
-    // };
-    // useEffect(() => {
-    //     if (!selectedFriend) return;
-    //     setMessages([]);
-    //     const interval = setInterval(() => {
-    //         handleGetMessage();
-    //     }, 1000);
-    //     return () => clearInterval(interval);
-    // }, [selectedFriend]);
-
-
     const handleSendMessage = () => {
         if (!newMessage.trim() || !currentChatId) return;
         socketRef.current.emit("sendMessage", { chatId: currentChatId, text: newMessage.trim()});
@@ -102,10 +63,10 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
         const socket = socketRef.current;
         const joinChatRoom = async () => {
             try {
-                const res = await getMessage(selectedFriend);
+                const res = await getMessage(selectedFriend.publicKey);
                 setMessages(res.messages);
                 setCurrentChatId(res.chat);
-                socket.emit("joinChat", { otherPublicKey: selectedFriend });
+                socket.emit("joinChat", { otherPublicKey: selectedFriend.publicKey });
             } catch (err) {
                 console.error("Failed to join chat:", err);
             }
@@ -139,7 +100,7 @@ export default function ChatWindow({ selectedFriend, setSelectedFriend, showChat
                                 {selectedFriend.substring(0, 2).toUpperCase()}
                             </div>
                             <h3 className="text-sm md:text-base font-medium text-[var(--color-text)] font-mono truncate">
-                                {selectedFriend}
+                                {selectedFriend.nickname ?? selectedFriend.publicKey}
                             </h3>
                         </div>
                         {/* Right Section: Status/NoteMessage */}
