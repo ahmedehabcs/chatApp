@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { FiMessageSquare, FiUserPlus, FiUser, FiCopy, FiX, FiLogOut } from 'react-icons/fi';
+import { useState, lazy } from 'react';
+import { FiMessageSquare, FiUserPlus, FiUser } from 'react-icons/fi';
 import { AnimatedBubbles, AnimatedTriangles } from '../components/AnimatedBg.jsx';
 import FriendList from '../components/dashboard/FriendList';
 import ChatWindow from '../components/dashboard/ChatWindow';
 import FriendRequests from '../components/dashboard/FriendRequests';
-import AddFriend from '../components/dashboard/AddFriend';
 import ProfilePopup from "../components/ProfilePopup.jsx";
+const AddFriend = lazy(() => import("../components/dashboard/AddFriend.jsx"));
 
 export default function Dashboard() {
     const [selectedFriend, setSelectedFriend] = useState(null);

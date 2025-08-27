@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
-import { FiUserPlus, FiLoader, FiKey, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { useEffect, useState, lazy } from 'react';
+import { FiUserPlus, FiLoader, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import { outgoingRequest } from "../../api/friends.js";
 import { useParams, useNavigate } from "react-router-dom";
+const AddFriendInput = lazy(() => import("./AddFriendInput.jsx"));
 
 export default function AddFriend() {
     const [publicKey, setPublicKey] = useState("");
@@ -12,7 +13,7 @@ export default function AddFriend() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if(key){
+        if (key) {
             setPublicKey(key);
             handleSendRequest(key);
         }
@@ -29,8 +30,8 @@ export default function AddFriend() {
             const res = await outgoingRequest(cleanPK);
             setNoteMessage(res.message);
             setSuccess(res.success);
-            setPublicKey("");
             navigate("/dashboard", { replace: true });
+            setPublicKey("");
             if (res.success) {
                 setTimeout(() => {
                     setNoteMessage("");
@@ -56,7 +57,7 @@ export default function AddFriend() {
             handleSendRequest();
         }
     };
-    
+
     return (
         <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg">
             <h2 className="text-lg sm:text-xl font-bold text-[var(--color-text)] mb-3 sm:mb-4 flex items-center">
@@ -67,8 +68,8 @@ export default function AddFriend() {
             {noteMessage && (
                 <div
                     className={`mb-3 sm:mb-4 p-3 rounded-lg sm:rounded-xl flex items-center shadow-sm sm:shadow-md border ${success
-                            ? "bg-[var(--color-success-bg)] text-[var(--color-success)] border-[var(--color-success)]/30"
-                            : "bg-[var(--color-error-bg)] text-[var(--color-error)] border-[var(--color-error)]/30"
+                        ? "bg-[var(--color-success-bg)] text-[var(--color-success)] border-[var(--color-success)]/30"
+                        : "bg-[var(--color-error-bg)] text-[var(--color-error)] border-[var(--color-error)]/30"
                         }`}
                 >
                     {success ? (
@@ -81,23 +82,15 @@ export default function AddFriend() {
             )}
 
             <div className="flex flex-col gap-2 sm:gap-3">
-                <div className="relative">
-                    <FiKey className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-text-light)]" size={16} />
-                    <input
-                        type="text"
-                        onChange={handleInputChange}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Enter friend's public key"
-                        className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-3 text-sm sm:text-base
-                            bg-[var(--color-bg-dark)] border border-[var(--color-border)] rounded-lg sm:rounded-xl 
-                            text-[var(--color-text)] placeholder-[var(--color-text-light)] 
-                            focus:outline-none focus:ring-2 focus:ring-[var(--color-main)]/50 
-                            focus:border-[var(--color-main)] transition-all"
-                    />
-                </div>
+                <AddFriendInput
+                    handleInputChange={handleInputChange}
+                    handleKeyPress={handleKeyPress}
+                    publicKey={publicKey}
+                    setPublicKey={setPublicKey}
+                />
 
                 <button
-                    onClick={handleSendRequest}
+                    onClick={() => handleSendRequest()}
                     disabled={loading}
                     className="w-full sm:w-auto px-4 py-2.5 sm:px-5 sm:py-3 bg-gradient-to-r from-[var(--color-main)] to-[var(--color-main-hover)] 
                         text-[var(--color-text-inverse)] font-medium rounded-lg sm:rounded-xl 
