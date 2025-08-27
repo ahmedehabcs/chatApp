@@ -5,7 +5,7 @@ import { listFriends, removeFriend } from "../../api/friends.js";
 import NoteMessageStruct from '../NoteMessageStruct.jsx';
 import NicknamePopup from "../NicknamePopup.jsx";
 
-export default function FriendList({ onSelectFriend, selectedFriend, setSelectedFriend, showChat, setShowChat }) {
+export default function FriendList({ setTotalFriend, selectedFriend, setSelectedFriend, showChat, setShowChat }) {
     const [friends, setFriends] = useState([]);
     const [noteMessage, setNoteMessage] = useState("");
     const [success, setSuccess] = useState(null);
@@ -16,6 +16,7 @@ export default function FriendList({ onSelectFriend, selectedFriend, setSelected
         try {
             const res = await listFriends();
             setFriends(res.friends);
+            setTotalFriend(prev => ({...prev, friends: res.friends.length}));
         } catch (error) {
             setNoteMessage(error.response?.data?.message || `Failed to list your friend`);
             setSuccess(false);
@@ -45,7 +46,13 @@ export default function FriendList({ onSelectFriend, selectedFriend, setSelected
         }
     };
 
+    const handleSelectFriend = (friend) => {
+        setSelectedFriend(friend);
+        setShowChat(true);
+        window.history.pushState({ chatOpen: true }, '');
+    };
 
+    
     return (
         <div className={`relative h-full flex flex-col ${showChat ? 'hidden lg:block' : 'block'}`}>
             <div className="flex-1 min-h-0 overflow-hidden pb-42">
@@ -53,7 +60,7 @@ export default function FriendList({ onSelectFriend, selectedFriend, setSelected
                     <NoteMessageStruct message={noteMessage} success={success} onClear={() => { setNoteMessage(""); setSuccess(null); }} />
                     <div className="divide-y divide-[var(--color-border)]">
                         {friends.map(friend => (
-                            <div key={friend.publicKey} className={`p-4 flex items-center justify-between cursor-pointer hover:bg-[var(--color-main-bg)] transition-all duration-200 ${selectedFriend === friend.publicKey ? 'bg-[var(--color-main-bg)]' : ''}`} onClick={() => onSelectFriend(friend)}>
+                            <div key={friend.publicKey} className={`p-4 flex items-center justify-between cursor-pointer hover:bg-[var(--color-main-bg)] transition-all duration-200 ${selectedFriend === friend.publicKey ? 'bg-[var(--color-main-bg)]' : ''}`} onClick={() => handleSelectFriend(friend)}>
                                 <div className="flex items-center">
                                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--color-main)] flex items-center justify-center text-[var(--color-text-inverse)] font-semibold text-sm md:text-base">
                                         {(friend.nickname ?? friend.publicKey).substring(0, 2).toUpperCase()}
@@ -84,13 +91,7 @@ export default function FriendList({ onSelectFriend, selectedFriend, setSelected
                 </div>
             </div>
             {popupFriend && (
-                <NicknamePopup
-                    friend={popupFriend}
-                    setNoteMessage={setNoteMessage}
-                    setSuccess={setSuccess}
-                    setClosePopUp={() => setPopupFriend(null)}
-                    friendList={friendList}
-                />
+                <NicknamePopup friend={popupFriend} setNoteMessage={setNoteMessage} setSuccess={setSuccess} setClosePopUp={() => setPopupFriend(null)} friendList={friendList} />
             )}
         </div>
     );

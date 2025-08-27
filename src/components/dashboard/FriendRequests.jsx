@@ -3,7 +3,7 @@ import { FiCheck, FiX } from 'react-icons/fi';
 import { incomingRequests, approveRequest, rejectRequest } from '../../api/friends.js';
 import NoteMessageStruct from '../NoteMessageStruct.jsx';
 
-export default function FriendRequests() {
+export default function FriendRequests({ setTotalFriend }) {
     const [requests, setRequests] = useState([]);
     const [noteMessage, setNoteMessage] = useState("");
     const [success, setSuccess] = useState(null);
@@ -13,13 +13,14 @@ export default function FriendRequests() {
         try {
             const res = await incomingRequests();
             setRequests(res.incomingRequests);
+            setTotalFriend(prev => ({...prev, requests: res.incomingRequests.length}));
         } catch (error) {
             setNoteMessage(error.response?.data?.message || "sth went wrong");
         }
     }
     useEffect(() => {
         incomingReqs();
-    }, [])
+    }, []);
 
     // accept or reject
     const handleRequest = async (pk, action) => {
@@ -29,15 +30,15 @@ export default function FriendRequests() {
             setSuccess(true);
             incomingReqs();
         } catch (error) {
-            setNoteMessage( error.response?.data?.message || `Failed to ${action === "approve" ? "approve" : "reject"} request`);
+            setNoteMessage(error.response?.data?.message || `Failed to ${action === "approve" ? "approve" : "reject"} request`);
             setSuccess(false);
         }
-    };   
+    };
 
     return (
         <div className="h-full overflow-y-auto scrollbar-hide">
-            <div> 
-                <NoteMessageStruct message={noteMessage} success={success} onClear={() => { setNoteMessage(""); setSuccess(null);}} />
+            <div>
+                <NoteMessageStruct message={noteMessage} success={success} onClear={() => { setNoteMessage(""); setSuccess(null); }} />
                 {requests.length > 0 ? (
                     <div className="space-y-4 pb-42">
                         {requests.map(request => (

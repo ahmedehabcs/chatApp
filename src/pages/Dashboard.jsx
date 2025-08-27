@@ -5,6 +5,7 @@ import FriendList from '../components/dashboard/FriendList';
 import ChatWindow from '../components/dashboard/ChatWindow';
 import FriendRequests from '../components/dashboard/FriendRequests';
 import ProfilePopup from "../components/ProfilePopup.jsx";
+import FriendRequestButton from "../components/dashboard/FriendRequestButton.jsx";
 const AddFriend = lazy(() => import("../components/dashboard/AddFriend.jsx"));
 
 export default function Dashboard() {
@@ -12,12 +13,7 @@ export default function Dashboard() {
     const [activeView, setActiveView] = useState('chats');
     const [showChat, setShowChat] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
-
-    const handleSelectFriend = (friend) => {
-        setSelectedFriend(friend);
-        setShowChat(true);
-        window.history.pushState({ chatOpen: true }, '');
-    };
+    const [totalFriend, setTotalFriend] = useState({ friends: 0, requests: 0 });
 
     return (
         <section className="min-h-[100dvh] backdrop-blur-3xl bg-[#000000] text-[var(--color-text)] relative overflow-hidden">
@@ -40,10 +36,7 @@ export default function Dashboard() {
                             <button onClick={() => setShowProfile(!showProfile)} className="p-2 rounded-full transition-colors" title="My Profile" >
                                 <FiUser size={24} />
                             </button>
-                            <ProfilePopup
-                                showProfile={showProfile}
-                                setShowProfile={setShowProfile}
-                            />
+                            <ProfilePopup showProfile={showProfile} setShowProfile={setShowProfile} />
                         </div>
                     </div>
                 </header>
@@ -51,18 +44,14 @@ export default function Dashboard() {
                     <div className={`h-full overflow-hidden ${showChat ? 'hidden lg:block w-96' : 'block w-full lg:w-96'}`}>
                         <AddFriend />
                         <div className="flex">
-                            <button className={`flex-1 py-3 text-sm md:text-base font-medium flex items-center justify-center ${activeView === 'chats' ? 'text-[var(--color-main)] border-b-2 border-[var(--color-main)]' : 'text-[var(--color-text-light)]'}`} onClick={() => setActiveView('chats')}>
-                                <FiMessageSquare className="mr-2" /> Chats
-                            </button>
-                            <button className={`flex-1 py-3 text-sm md:text-base font-medium flex items-center justify-center ${activeView === 'requests' ? 'text-[var(--color-main)] border-b-2 border-[var(--color-main)]' : 'text-[var(--color-text-light)]'}`} onClick={() => setActiveView('requests')}>
-                                <FiUserPlus className="mr-2" /> Requests
-                            </button>
+                            <FriendRequestButton label="Chats" icon={FiMessageSquare} count={totalFriend.friends} isActive={activeView === 'chats'} onClick={() => setActiveView('chats')} />
+                            <FriendRequestButton label="Requests" icon={FiUserPlus} count={totalFriend.requests} isActive={activeView === 'requests'} onClick={() => setActiveView('requests')} />
                         </div>
                         <div className="h-full overflow-y-auto">
                             {activeView === 'chats' ? (
-                                <FriendList onSelectFriend={handleSelectFriend} selectedFriend={selectedFriend} setSelectedFriend={setSelectedFriend} showChat={showChat} setShowChat={setShowChat} />
+                                <FriendList setTotalFriend={setTotalFriend} selectedFriend={selectedFriend} setSelectedFriend={setSelectedFriend} showChat={showChat} setShowChat={setShowChat} />
                             ) : (
-                                <FriendRequests />
+                                <FriendRequests setTotalFriend={setTotalFriend} />
                             )}
                         </div>
                     </div>
