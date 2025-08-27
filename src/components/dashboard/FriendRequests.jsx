@@ -2,25 +2,44 @@ import { useEffect, useState } from 'react';
 import { FiCheck, FiX } from 'react-icons/fi';
 import { incomingRequests, approveRequest, rejectRequest } from '../../api/friends.js';
 import NoteMessageStruct from '../NoteMessageStruct.jsx';
+import useSocket from '../../hooks/useSocket.jsx';
+import useAuth from '../../hooks/useAuth.jsx';
 
 export default function FriendRequests({ setTotalFriend }) {
     const [requests, setRequests] = useState([]);
     const [noteMessage, setNoteMessage] = useState("");
     const [success, setSuccess] = useState(null);
+    const { user: myPublicKey } = useAuth();
+    const socketRef = useSocket(myPublicKey);
 
-    // all incoming requests
     const incomingReqs = async () => {
         try {
             const res = await incomingRequests();
             setRequests(res.incomingRequests);
-            setTotalFriend(prev => ({...prev, requests: res.incomingRequests.length}));
+            setTotalFriend(prev => ({ ...prev, requests: res.incomingRequests.length }));
         } catch (error) {
             setNoteMessage(error.response?.data?.message || "sth went wrong");
         }
     }
+
     useEffect(() => {
         incomingReqs();
-    }, []);
+        if (!socketRef.current) return;
+
+        const handler = (newRequest) => {
+            setRequests(prev => [...prev, newRequest]);
+            setTotalFriend(prev => ({ ...prev, requests: prev.requests + 1 }));
+            setNoteMessage(`New friend request from ${newRequest.username}`);
+            setSuccess(true);
+        };
+
+        socketRef.current.on("newFriendRequest", handler);
+
+        return () => {
+            socketRef.current.off("newFriendRequest", handler);
+        };
+    }, [socketRef.current]);
+
 
     // accept or reject
     const handleRequest = async (pk, action) => {
@@ -28,7 +47,10 @@ export default function FriendRequests({ setTotalFriend }) {
             const res = action === "approve" ? await approveRequest(pk) : await rejectRequest(pk);
             setNoteMessage(res.message);
             setSuccess(true);
-            incomingReqs();
+
+            // Update local state immediately without refetching
+            setRequests(prev => prev.filter(request => request.publicKey !== pk));
+            setTotalFriend(prev => ({ ...prev, requests: prev.requests - 1 }));
         } catch (error) {
             setNoteMessage(error.response?.data?.message || `Failed to ${action === "approve" ? "approve" : "reject"} request`);
             setSuccess(false);

@@ -2,8 +2,9 @@ import User from "../models/User.js";
 import Chat from "../models/Chat.js";
 import handleSendErrors from "../utils/handleSendErrors.js";
 import Message from "../models/Message.js";
+import { getIO } from "../socket/index.js";
 
-// POST /api/friends/request
+
 export const outgoingRequest = async (req, res, next) => {
     try {
         const senderPublicKey = req.user.publicKey;
@@ -15,7 +16,7 @@ export const outgoingRequest = async (req, res, next) => {
 
         // Get both users
         const sender = await User.findOne({ publicKey: senderPublicKey });
-        const receiver = await User.findOne({ publicKey: receiverPublicKey })
+        const receiver = await User.findOne({ publicKey: receiverPublicKey });
 
         if (!sender) {
             return handleSendErrors("Sender user not found", false, 404, next);
@@ -39,8 +40,16 @@ export const outgoingRequest = async (req, res, next) => {
         await sender.save();
 
         // Update receiver (add incoming request if not already there)
-        receiver.incomingRequests.push({ publicKey: senderPublicKey });
+        receiver.incomingRequests.push({  publicKey: senderPublicKey });
         await receiver.save();
+
+        // Emit real-time notification to receiver
+        try {
+            const io = getIO();
+            io.to(`user_${receiverPublicKey}`).emit("newFriendRequest", { publicKey: senderPublicKey, timestamp: new Date() });
+        } catch (socketError) {
+            console.log("Socket error (non-critical):", socketError.message);
+        }
 
         return res.status(200).json({ success: true, message: "Friend request sent successfully." });
 
