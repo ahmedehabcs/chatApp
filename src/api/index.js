@@ -1,7 +1,7 @@
 import axios from "axios";
-
+import URL from "../components/URL";
 const API = axios.create({
-    baseURL: "https://h1zslq1r-3000.euw.devtunnels.ms/api",
+    baseURL: `${URL}/api`,
     withCredentials: true,
 });
 

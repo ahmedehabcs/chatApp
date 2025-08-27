@@ -1,23 +1,36 @@
-import { useState } from 'react';
-import { FiUserPlus, FiLoader, FiKey } from 'react-icons/fi';
+import { useEffect, useState } from 'react';
+import { FiUserPlus, FiLoader, FiKey, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import { outgoingRequest } from "../../api/friends.js";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function AddFriend() {
     const [publicKey, setPublicKey] = useState("");
     const [noteMessage, setNoteMessage] = useState("");
     const [success, setSuccess] = useState(null); // true | false | null
     const [loading, setLoading] = useState(false);
+    const { key } = useParams();
+    const navigate = useNavigate();
 
-    const handleSendRequest = async () => {
-        const cleanPK = publicKey.replace(/\s+/g, "").toLowerCase();
+    useEffect(() => {
+        if(key){
+            setPublicKey(key);
+            handleSendRequest(key);
+        }
+    }, [key])
+
+
+    const handleSendRequest = async (customPK) => {
+        const cleanPK = (customPK || publicKey).replace(/\s+/g, "").toLowerCase();
+        if (!cleanPK) return;
         setLoading(true);
         setNoteMessage("");
         setSuccess(null);
-
         try {
             const res = await outgoingRequest(cleanPK);
             setNoteMessage(res.message);
             setSuccess(res.success);
+            setPublicKey("");
+            navigate("/dashboard", { replace: true });
             if (res.success) {
                 setTimeout(() => {
                     setNoteMessage("");

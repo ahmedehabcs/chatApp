@@ -1,12 +1,13 @@
-import { useState, useRef } from 'react';
-import { FiUser, FiX, FiLogOut, FiShare2, FiDownload } from 'react-icons/fi';
-import { QRCodeSVG } from 'qrcode.react';
-import useAuth from '../hooks/useAuth.jsx';
+import { useState, useRef } from "react";
+import { FiUser, FiX, FiLogOut, FiShare2, FiDownload } from "react-icons/fi";
+import { QRCodeSVG } from "qrcode.react";
+import useAuth from "../hooks/useAuth.jsx";
 import { logout } from "../api/auth.js";
+import URL from "./URL.jsx";
 
 export default function ProfilePopup({ showProfile, setShowProfile }) {
     const { user: publicKey } = useAuth();
-    const [activeTab, setActiveTab] = useState('key'); // 'key' or 'qr'
+    const [activeTab, setActiveTab] = useState("key"); // 'key' or 'qr'
     const qrRef = useRef();
 
     const logoutbtn = async () => {
@@ -16,41 +17,28 @@ export default function ProfilePopup({ showProfile, setShowProfile }) {
         window.location.reload();
     };
 
+    // Share link
     const handleShareKey = async () => {
+        const link = `${URL}/#/dashboard/add/${encodeURIComponent(publicKey)}`;
         const shareData = {
-            title: 'My Public Key',
-            text: 'Add me as a friend on Secure Chat!',
-            url: `${window.location.origin}/api/friends/request/${encodeURIComponent(publicKey)}`
+            title: "My Public Key",
+            text: "Add me as a friend on Secure Chat!",
+            url: link,
         };
 
         try {
             if (navigator.share) {
                 await navigator.share(shareData);
             } else {
-                await navigator.clipboard.writeText(shareData.url);
-                alert('Share link copied to clipboard!');
+                // fallback copy to clipboard
+                await navigator.clipboard.writeText(link);
+                alert("Link copied to clipboard!");
             }
         } catch (err) {
-            console.log('Error sharing:', err);
+            console.log("Error sharing:", err);
         }
     };
 
-    const downloadQRCode = () => {
-        if (!qrRef.current) return;
-        
-        const svg = qrRef.current;
-        const svgData = new XMLSerializer().serializeToString(svg);
-        const blob = new Blob([svgData], { type: "image/svg+xml" });
-        const url = URL.createObjectURL(blob);
-        
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "secure-chat-qr.svg";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
 
     if (!showProfile) return null;
 
@@ -68,30 +56,16 @@ export default function ProfilePopup({ showProfile, setShowProfile }) {
 
             {/* Tab Navigation */}
             <div className="flex border-b border-[var(--color-border)]">
-                <button
-                    onClick={() => setActiveTab('key')}
-                    className={`flex-1 py-2 text-sm font-medium ${
-                        activeTab === 'key' 
-                            ? 'text-[var(--color-main)] border-b-2 border-[var(--color-main)]' 
-                            : 'text-[var(--color-text-light)] hover:text-[var(--color-text)]'
-                    }`}
-                >
+                <button onClick={() => setActiveTab("key")} className={`flex-1 py-2 text-sm font-medium ${activeTab === "key" ? "text-[var(--color-main)] border-b-2 border-[var(--color-main)]" : "text-[var(--color-text-light)] hover:text-[var(--color-text)]"}`}>
                     Public Key
                 </button>
-                <button
-                    onClick={() => setActiveTab('qr')}
-                    className={`flex-1 py-2 text-sm font-medium ${
-                        activeTab === 'qr' 
-                            ? 'text-[var(--color-main)] border-b-2 border-[var(--color-main)]' 
-                            : 'text-[var(--color-text-light)] hover:text-[var(--color-text)]'
-                    }`}
-                >
+                <button onClick={() => setActiveTab("qr")} className={`flex-1 py-2 text-sm font-medium ${activeTab === "qr" ? "text-[var(--color-main)] border-b-2 border-[var(--color-main)]" : "text-[var(--color-text-light)] hover:text-[var(--color-text)]"}`}>
                     QR Code
                 </button>
             </div>
 
             <div className="p-4">
-                {activeTab === 'key' ? (
+                {activeTab === "key" ? (
                     <div className="mb-3">
                         <label className="text-xs font-medium text-[var(--color-text-light)] block mb-1">
                             YOUR PUBLIC KEY
@@ -101,11 +75,7 @@ export default function ProfilePopup({ showProfile, setShowProfile }) {
                                 {publicKey}
                             </p>
                             <div className="absolute top-2 right-2 flex gap-1">
-                                <button
-                                    onClick={handleShareKey}
-                                    className="p-1 text-[var(--color-text-light)] hover:text-[var(--color-main)] transition-colors"
-                                    title="Share public key"
-                                >
+                                <button onClick={handleShareKey} className="p-1 text-[var(--color-text-light)] hover:text-[var(--color-main)] transition-colors" title="Share public key">
                                     <FiShare2 size={14} />
                                 </button>
                             </div>
@@ -120,37 +90,24 @@ export default function ProfilePopup({ showProfile, setShowProfile }) {
                             <div className="p-4 bg-white rounded-lg border border-[var(--color-border)]">
                                 <QRCodeSVG
                                     ref={qrRef}
-                                    value={publicKey}
+                                    value={`${URL}/#/dashboard/add/${encodeURIComponent(publicKey)}`}
                                     size={160}
                                     level="M"
                                     includeMargin={true}
                                 />
                             </div>
-                            <button
-                                onClick={downloadQRCode}
-                                className="mt-3 px-3 py-1 text-xs bg-[var(--color-surface)] text-[var(--color-text-light)] hover:text-[var(--color-main)] border border-[var(--color-border)] rounded-md flex items-center gap-1 transition-colors"
-                            >
-                                <FiDownload size={12} />
-                                Download QR
-                            </button>
                         </div>
                     </div>
                 )}
 
                 {/* Logout Button */}
-                <button
-                    onClick={logoutbtn}
-                    className="w-full mb-3 px-4 py-2 bg-[var(--color-error)] text-[var(--color-text-inverse)] rounded-md hover:bg-[var(--color-error)]/90 transition-colors flex items-center justify-center gap-2"
-                >
+                <button onClick={logoutbtn} className="w-full mb-3 px-4 py-2 bg-[var(--color-error)] text-[var(--color-text-inverse)] rounded-md hover:bg-[var(--color-error)]/90 transition-colors flex items-center justify-center gap-2">
                     <FiLogOut size={16} />
                     Logout
                 </button>
 
                 {/* Close Button */}
-                <button
-                    onClick={() => setShowProfile(false)}
-                    className="w-full px-4 py-2 bg-[var(--color-main)] text-[var(--color-text-inverse)] rounded-md hover:bg-[var(--color-main-hover)] transition-colors flex items-center justify-center gap-2"
-                >
+                <button onClick={() => setShowProfile(false)} className="w-full px-4 py-2 bg-[var(--color-main)] text-[var(--color-text-inverse)] rounded-md hover:bg-[var(--color-main-hover)] transition-colors flex items-center justify-center gap-2">
                     <FiX size={16} />
                     Close
                 </button>

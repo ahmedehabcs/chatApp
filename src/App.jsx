@@ -43,6 +43,15 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/dashboard/add/:key"
+            element={
+              <ProtectedRoute requiresAuth={true}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          
           <Route path="*" element={<Home />} />
         </Routes>
       </Suspense>
