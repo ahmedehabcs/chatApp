@@ -30,8 +30,6 @@ export default function AddFriend() {
             const res = await outgoingRequest(cleanPK);
             setNoteMessage(res.message);
             setSuccess(res.success);
-            navigate("/dashboard", { replace: true });
-            setPublicKey("");
             if (res.success) {
                 setTimeout(() => {
                     setNoteMessage("");
@@ -43,6 +41,8 @@ export default function AddFriend() {
             setSuccess(false);
         } finally {
             setLoading(false);
+            navigate("/dashboard", { replace: true });
+            setPublicKey("");
         }
     };
 
