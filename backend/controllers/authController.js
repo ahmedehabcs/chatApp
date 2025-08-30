@@ -9,7 +9,7 @@ export const signup = async (req, res, next) => {
         const publicKey = generatePublicKey();
         const privateKey = generatePrivateKey();
         const user = await User.create({ publicKey, privateKey });
-        res.status(201).json({message: "User created successfully", success: true, user});
+        res.status(201).json({message: "User created successfully", success: true, user: user.privateKey});
     } catch (error) {
         if (error.code === 11000){
             return handleSendErrors("This user is already registered before, please try again", false, 400, next);
