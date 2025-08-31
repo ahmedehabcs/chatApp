@@ -30,7 +30,7 @@ export default function LandingPage() {
 							</button>
 							<button
 								onClick={() => navigate("/login")}
-								className="px-8 py-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl font-bold text-lg hover:bg-[var(--color-bg)] transition-all flex items-center justify-center gap-2"
+								className="px-8 py-4 border border-white rounded-xl font-bold text-lg hover:bg-[var(--color-bg)] transition-all flex items-center justify-center gap-2"
 							>
 								<FiLogIn size={20} /> Sign In
 							</button>
@@ -102,15 +102,16 @@ export default function LandingPage() {
 								desc: "Share your public key with friends to chat privately. All messages are encrypted end-to-end.",
 							},
 						].map((item, index) => (
-							<div
-								key={index}
-								className="flex flex-col md:flex-row items-start mb-12 last:mb-0 group"
-							>
-								<div className="w-16 h-16 rounded-full bg-[var(--color-surface)] flex items-center justify-center text-2xl font-bold text-[var(--color-main)] mb-4 md:mb-0 md:mr-8 group-hover:bg-[var(--color-main)] group-hover:text-white transition-all">
-									{item.step}
+							<div key={index} className="flex flex-col md:flex-row items-start mb-12 last:mb-0 group">
+								<div className="flex justify-center items-center gap-4">
+									<p className="w-16 h-16 rounded-full bg-[var(--color-surface)] flex items-center justify-center text-2xl font-bold text-[var(--color-main)] mb-4 md:mb-0 md:mr-8 group-hover:bg-[var(--color-main)] group-hover:text-white transition-all">
+										{item.step}
+									</p>
+									<h3 className="sm:hidden block text-2xl font-bold mb-2">{item.title}</h3>
 								</div>
+								
 								<div className="flex-1">
-									<h3 className="text-2xl font-bold mb-2">{item.title}</h3>
+									<h3 className="sm:block hidden text-2xl font-bold mb-2">{item.title}</h3>
 									<p className="text-[var(--color-text-light)]">{item.desc}</p>
 								</div>
 							</div>
