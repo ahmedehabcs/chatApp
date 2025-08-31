@@ -4,7 +4,7 @@ import handleSendErrors from "../utils/handleSendErrors.js";
 import Message from "../models/Message.js";
 import { getIO } from "../socket/index.js";
 
-
+// POST /api/friends/request
 export const outgoingRequest = async (req, res, next) => {
     try {
         const senderPublicKey = req.user.publicKey;
@@ -35,6 +35,11 @@ export const outgoingRequest = async (req, res, next) => {
             return handleSendErrors("Friend request already sent.", false, 400, next);
         }
 
+        // Check if the receiver has already sent a request
+        if (receiver.outgoingRequests.some(r => r.publicKey === senderPublicKey)) {
+            return handleSendErrors( "This user has already sent you a friend request.", false, 400, next);
+        }
+
         // Update sender (add outgoing request)
         sender.outgoingRequests.push({ publicKey: receiverPublicKey });
         await sender.save();
@@ -52,7 +57,6 @@ export const outgoingRequest = async (req, res, next) => {
         }
 
         return res.status(200).json({ success: true, message: "Friend request sent successfully." });
-
     } catch (error) {
         handleSendErrors(error || "Internal server error", false, 500, next);
     }

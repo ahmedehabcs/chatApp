@@ -1,0 +1,62 @@
+import Chat from "../models/Chat.js";
+import Message from "../models/Message.js";
+import sanitizeHtml from "sanitize-html";
+
+export const handleMessageEvents = (io, socket) => {
+    // Join chat
+    socket.on("joinChat", async ({ otherPublicKey }) => {
+        const userpk = socket.userPublicKey;
+
+        if (!otherPublicKey) {
+            return socket.emit("error", { message: "Other user public key required" });
+        }
+
+        let chat = await Chat.findOne({ participants: { $all: [userpk, otherPublicKey] } });
+        if (!chat) {
+            chat = new Chat({ participants: [userpk, otherPublicKey] });
+            await chat.save();
+        }
+
+        socket.join(chat.chatId);
+        socket.emit("joinedChat", { chatId: chat.chatId });
+    });
+
+    // Send message
+    socket.on("sendMessage", async ({ chatId, text }) => {
+        try {
+            const sender = socket.userPublicKey;
+
+            if (!chatId) {
+                return socket.emit("error", { message: "Chat ID is required" });
+            }
+            if (!text || !text.trim()) {
+                return socket.emit("error", { message: "Message cannot be empty" });
+            }
+
+            const cleanText = sanitizeHtml(text.trim(), {
+                allowedTags: [],
+                allowedAttributes: {},
+            });
+
+            const chat = await Chat.findOne({ chatId });
+            if (!chat) {
+                return socket.emit("error", { message: "Chat does not exist" });
+            }
+            if (!chat.participants.includes(sender)) {
+                return socket.emit("error", { message: "You are not part of this chat" });
+            }
+
+            const newMessage = new Message({
+                chatId,
+                sender,
+                text: cleanText,
+            });
+            await newMessage.save();
+
+            io.to(chatId).emit("newMessage", newMessage);
+        } catch (err) {
+            console.error("sendMessage error:", err);
+            socket.emit("error", { message: "Failed to send message" });
+        }
+    });
+};
