@@ -1,9 +1,11 @@
 import crypto from "crypto";
-import { v4 as uuidv4 } from "uuid";
 
-export function generatePublicKey(){
-    return crypto.randomBytes(6).toString("hex");
-}
-export function generatePrivateKey(){
-    return uuidv4();
+export function generateKeyPair() {
+    const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
+        modulusLength: 2048,
+        publicKeyEncoding: { type: "spki", format: "pem" },
+        privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    });
+
+    return { publicKey: publicKey.trim(), privateKey: privateKey.trim() };
 }

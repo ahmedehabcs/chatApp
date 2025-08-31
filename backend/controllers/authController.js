@@ -1,50 +1,89 @@
 import User from "../models/User.js";
-import { generatePublicKey, generatePrivateKey } from "../utils/cryptoGenerator.js";
+import Challenge from "../models/Challenge.js";
+import { generateKeyPair } from "../utils/cryptoGenerator.js";
 import handleSendErrors from "../utils/handleSendErrors.js";
 import generateJWT from "../utils/generateJWT.js";
+import crypto from "crypto";
 
-// POST /api/auth/signup
 export const signup = async (req, res, next) => {
     try {
-        const publicKey = generatePublicKey();
-        const privateKey = generatePrivateKey();
-        const user = await User.create({ publicKey, privateKey });
-        res.status(201).json({message: "User created successfully", success: true, user: user.privateKey});
+        const { publicKey, privateKey } = generateKeyPair();
+        await User.create({ publicKey: publicKey.trim() });
+        res.status(201).json({ message: "User created successfully", success: true, keys: { publicKey, privateKey } });
     } catch (error) {
-        if (error.code === 11000){
-            return handleSendErrors("This user is already registered before, please try again", false, 400, next);
+        if (error.code === 11000) {
+            return handleSendErrors("This user is already registered", false, 400, next);
         }
         handleSendErrors(error.message || "Internal server error", false, 500, next);
     }
-}
+};
 
-// POST /api/auth/signin
-export const signin = async (req, res, next) => {
+export const createChallenge = async (req, res, next) => {
     try {
-        const { privateKey } = req.body;
-        if (!privateKey) {
-            return handleSendErrors("Private key is required", false, 400, next);
-        }
-        const user = await User.findOne({ privateKey });
+        let { publicKey } = req.body;
+        if (!publicKey) return handleSendErrors("Public key is required", false, 400, next);
+        publicKey = publicKey.trim();
 
-        if(!user) {
-            return handleSendErrors("Incorrect private key", false, 401, next);
-        }
-        const token = generateJWT(user.publicKey);
+        const user = await User.findOne({ publicKey });
+        if (!user) return handleSendErrors("User not found", false, 404, next);
 
+        let challengeDoc = await Challenge.findOne({ publicKey });
+
+        if (challengeDoc && challengeDoc.expiresAt > Date.now()) {
+            return res.json({ success: true, challenge: challengeDoc.challenge });
+        }
+
+        if (challengeDoc) await Challenge.deleteOne({ _id: challengeDoc._id });
+
+        const challenge = crypto.randomBytes(32).toString("hex");
+        challengeDoc = await Challenge.create({
+            publicKey,
+            challenge,
+            expiresAt: Date.now() + 5 * 60 * 1000 // 5 minutes
+        });
+
+        res.json({ success: true, challenge: challengeDoc.challenge });
+    } catch (error) {
+        console.log(error);
+        handleSendErrors(error.message || "Internal server error", false, 500, next);
+    }
+};
+
+export const verifySignin = async (req, res, next) => {
+    try {
+        let { publicKey, signature } = req.body;
+        if (!publicKey || !signature) return handleSendErrors("Public key and signature are required", false, 400, next);
+
+        publicKey = publicKey.trim();
+        const challengeDoc = await Challenge.findOne({ publicKey });
+        if (!challengeDoc || challengeDoc.expiresAt < Date.now()) {
+            return handleSendErrors("Challenge expired or not found", false, 401, next);
+        }
+
+        const verifier = crypto.createVerify("SHA256");
+        verifier.update(challengeDoc.challenge);
+        verifier.end();
+
+        const isValid = verifier.verify(publicKey, Buffer.from(signature, "base64"));
+        if (!isValid) return handleSendErrors("Invalid signature", false, 401, next);
+
+        await Challenge.deleteOne({ _id: challengeDoc._id });
+
+        const token = generateJWT(publicKey);
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
-            maxAge: 60 * 60 * 1000 
-        })
-        res.json({message: "Successful signin", success: true, user});
+            maxAge: 60 * 60 * 1000 // 1h
+        });
+
+        res.json({ success: true, message: "Signin successful" });
     } catch (error) {
+        console.log(error);
         handleSendErrors(error.message || "Internal server error", false, 500, next);
     }
-}
+};
 
-// POST /api/auth/logout
 export const logout = async (req, res, next) => {
     try {
         res.clearCookie("token", {

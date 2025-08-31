@@ -1,16 +1,18 @@
 import express from "express";
-import { signup, signin, logout } from "../controllers/authController.js";
+import { signup, createChallenge, verifySignin, logout } from "../controllers/authController.js";
 import { getCurrentUser } from "../controllers/userController.js";
 import verifyJWT from "../middlewares/verifyJWT.js";
 
 const router = express.Router();
 
-router.post("/signup", signup);
-router.post("/signin", signin);
+router.get("/signup", signup);
 router.post("/logout", verifyJWT, logout);
 router.get("/me", verifyJWT, getCurrentUser);
 
-// /api/auth/check
+// challenge flow
+router.post("/challenge", createChallenge);
+router.post("/verify", verifySignin);
+
 router.get("/check", verifyJWT, (req, res) => {
     res.json({ exists: true });
 });

@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { FiLock, FiShield, FiUsers, FiZap, FiLogIn, FiUserPlus } from "react-icons/fi";
+import { FiLock, FiShield, FiZap, FiLogIn, FiUserPlus } from "react-icons/fi";
 import { AnimatedBubbles, AnimatedTriangles } from "../components/AnimatedBg.jsx";
+
 export default function LandingPage() {
 	const navigate = useNavigate();
 	return (
 		<div className="min-h-screen backdrop-blur-3xl bg-[#000000] text-[var(--color-text)]">
 			<AnimatedTriangles />
 			<AnimatedBubbles />
+
 			<section className="relative h-screen flex items-center justify-center overflow-hidden">
 				<div className="container mx-auto px-6 z-10">
 					<div className="max-w-4xl mx-auto text-center">
@@ -15,8 +17,9 @@ export default function LandingPage() {
 							Chats
 						</h1>
 						<p className="text-xl md:text-2xl text-[var(--color-text-light)] mb-10 max-w-3xl mx-auto animate-fade-in delay-100">
-							End-to-end encrypted messaging that keeps your conversations truly
-							private
+							We use RSA public/private keys and digital signatures to authenticate users securely.
+							Your private key never leaves your device. All messages are end-to-end encrypted, 
+							ensuring only intended recipients can read them.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in delay-200">
 							<button
@@ -47,25 +50,18 @@ export default function LandingPage() {
 						{[
 							{
 								icon: <FiLock size={32} className="text-[var(--color-main)]" />,
-								title: "Military-Grade Encryption",
-								desc: "All messages are encrypted end-to-end with AES-256, the same standard used by governments.",
+								title: "RSA Challenge-Response",
+								desc: "Authenticate securely using digital signatures. Your private key never leaves your device.",
 							},
 							{
-								icon: (
-									<FiShield
-										size={32}
-										className="text-[var(--color-secondary)]"
-									/>
-								),
-								title: "No Data Collection",
-								desc: "We don't store your messages or metadata. Your conversations stay private.",
+								icon: <FiShield size={32} className="text-[var(--color-secondary)]" />,
+								title: "End-to-End Encryption",
+								desc: "All messages are encrypted with AES-256, ensuring only recipients can read them.",
 							},
 							{
-								icon: (
-									<FiZap size={32} className="text-[var(--color-success)]" />
-								),
-								title: "Lightning Fast",
-								desc: "Experience real-time messaging with minimal latency and maximum reliability.",
+								icon: <FiZap size={32} className="text-[var(--color-success)]" />,
+								title: "Fast & Reliable",
+								desc: "Real-time messaging with minimal latency, keeping your conversations smooth and private.",
 							},
 						].map((feature, index) => (
 							<div
@@ -93,17 +89,17 @@ export default function LandingPage() {
 							{
 								step: "1",
 								title: "Generate Your Keys",
-								desc: "Sign up to instantly receive your unique public and private keys.",
+								desc: "Sign up to receive a unique RSA public/private key pair. Keep your private key safe on your device.",
 							},
 							{
 								step: "2",
-								title: "Verify with Your Private Key",
-								desc: "Use your private key to securely sign in and prove your identity.",
+								title: "Sign Challenges to Authenticate",
+								desc: "Use your private key to sign server-generated challenges. This proves your identity without exposing your key.",
 							},
 							{
 								step: "3",
 								title: "Start Encrypted Chats",
-								desc: "Share your public key with friends and chat privately in real-time.",
+								desc: "Share your public key with friends to chat privately. All messages are encrypted end-to-end.",
 							},
 						].map((item, index) => (
 							<div
@@ -123,73 +119,13 @@ export default function LandingPage() {
 				</div>
 			</section>
 
-			{/* Testimonials Section */}
-			<section className="py-20 relative overflow-hidden">
-				<div className="container mx-auto px-6 z-10">
-					<h2 className="text-4xl font-bold text-center mb-16">
-						Trusted by Thousands
-					</h2>
-
-					<div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-						{[
-							{
-								name: "Sarah Johnson",
-								role: "Journalist",
-								quote:
-									"As someone who deals with sensitive information daily, this platform gives me peace of mind.",
-							},
-							{
-								name: "Michael Chen",
-								role: "Lawyer",
-								quote:
-									"The only messaging app I recommend to my clients for attorney-client privilege.",
-							},
-							{
-								name: "Emma Rodriguez",
-								role: "Healthcare Professional",
-								quote:
-									"HIPAA-compliant messaging has never been this easy and secure.",
-							},
-							{
-								name: "David Wilson",
-								role: "Business Executive",
-								quote:
-									"Our board communications require absolute confidentiality - this delivers.",
-							},
-						].map((testimonial, index) => (
-							<div
-								key={index}
-								className="bg-[var(--color-surface)] p-8 rounded-2xl border border-[var(--color-border)] shadow-sm hover:shadow-md transition-all"
-							>
-								<div className="flex items-center mb-4">
-									<div className="w-12 h-12 rounded-full bg-[var(--color-main-bg)] flex items-center justify-center text-[var(--color-main)] mr-4">
-										<FiUsers size={20} />
-									</div>
-									<div>
-										<h4 className="font-bold">{testimonial.name}</h4>
-										<p className="text-sm text-[var(--color-text-light)]">
-											{testimonial.role}
-										</p>
-									</div>
-								</div>
-								<p className="text-[var(--color-text-light)] italic">
-									"{testimonial.quote}"
-								</p>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
-
 			{/* CTA Section */}
 			<section className="py-20 relative overflow-hidden">
 				<div className="container mx-auto px-6 z-10">
 					<div className="max-w-4xl mx-auto text-center">
-						<h2 className="text-4xl font-bold mb-6">
-							Ready for Private Conversations?
-						</h2>
+						<h2 className="text-4xl font-bold mb-6">Ready for Private Conversations?</h2>
 						<p className="text-xl text-white opacity-80 mb-10">
-							Join thousands who value their privacy. Get started in seconds.
+							Join thousands who value privacy. Sign up to generate your keys and start encrypted chats immediately.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">
 							<button

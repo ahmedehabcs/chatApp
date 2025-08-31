@@ -1,14 +1,19 @@
 import API from "./index.js";
 
 export const signUp = async () => {
-	const res = await API.post("/auth/signup");
+	const res = await API.get("/auth/signup");
 	return res.data;
 };
 
-export const signIn = async (privateKey) => {
-	const res = await API.post("/auth/signin", { privateKey });
+export const createChallenge = async(publicKey) => {
+	const res = await API.post("/auth/challenge", { publicKey });
 	return res.data;
-};
+}
+
+export const verifyChallenge = async(publicKey, signature) => {
+	const res = await API.post("/auth/verify", { publicKey, signature });
+	return res.data;
+}
 
 export const logout = async () => {
 	const res = await API.post("/auth/logout");
