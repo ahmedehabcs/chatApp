@@ -1,29 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import {
-	FiLock,
-	FiMessageSquare,
-	FiShield,
-	FiUsers,
-	FiZap,
-	FiArrowRight,
-	FiLogIn,
-	FiUserPlus,
-} from "react-icons/fi";
-import {
-	AnimatedBubbles,
-	AnimatedTriangles,
-	AnimatedWaves,
-	AnimatedBlobs,
-	AnimatedGrid,
-} from "../components/AnimatedBg.jsx";
+import { FiLock, FiShield, FiUsers, FiZap, FiLogIn, FiUserPlus } from "react-icons/fi";
+import { AnimatedBubbles, AnimatedTriangles } from "../components/AnimatedBg.jsx";
 export default function LandingPage() {
 	const navigate = useNavigate();
-
 	return (
 		<div className="min-h-screen backdrop-blur-3xl bg-[#000000] text-[var(--color-text)]">
-			{/* Hero Section */}
+			<AnimatedTriangles />
+			<AnimatedBubbles />
 			<section className="relative h-screen flex items-center justify-center overflow-hidden">
-				<AnimatedBubbles />
 				<div className="container mx-auto px-6 z-10">
 					<div className="max-w-4xl mx-auto text-center">
 						<h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">
@@ -54,7 +38,6 @@ export default function LandingPage() {
 
 			{/* Features Section */}
 			<section className="py-20 relative overflow-hidden">
-				<AnimatedTriangles />
 				<div className="container mx-auto px-6 z-10">
 					<h2 className="text-4xl font-bold text-center mb-16">
 						Why Choose Our Secure Chat
@@ -101,8 +84,7 @@ export default function LandingPage() {
 			</section>
 
 			{/* How It Works Section */}
-			<section className="py-20 bg-gradient-to-br from-[var(--color-main-bg)] to-[var(--color-secondary-bg)] relative overflow-hidden">
-				<AnimatedWaves />
+			<section className="py-20 relative overflow-hidden">
 				<div className="container mx-auto px-6 z-10">
 					<h2 className="text-4xl font-bold text-center mb-16">How It Works</h2>
 
@@ -143,7 +125,6 @@ export default function LandingPage() {
 
 			{/* Testimonials Section */}
 			<section className="py-20 relative overflow-hidden">
-				<AnimatedBlobs />
 				<div className="container mx-auto px-6 z-10">
 					<h2 className="text-4xl font-bold text-center mb-16">
 						Trusted by Thousands
@@ -201,14 +182,13 @@ export default function LandingPage() {
 			</section>
 
 			{/* CTA Section */}
-			<section className="py-20 bg-[var(--color-bg-dark)]  relative overflow-hidden">
-				<AnimatedGrid />
+			<section className="py-20 relative overflow-hidden">
 				<div className="container mx-auto px-6 z-10">
 					<div className="max-w-4xl mx-auto text-center">
 						<h2 className="text-4xl font-bold mb-6">
 							Ready for Private Conversations?
 						</h2>
-						<p className="text-xl text-[var(--color-text-inverse)] opacity-80 mb-10">
+						<p className="text-xl text-white opacity-80 mb-10">
 							Join thousands who value their privacy. Get started in seconds.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -220,7 +200,7 @@ export default function LandingPage() {
 							</button>
 							<button
 								onClick={() => navigate("/login")}
-								className="px-8 py-4 bg-transparent border border-[var(--color-text-inverse)] rounded-xl font-bold text-lg hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+								className="px-8 py-4 bg-transparent border border-white rounded-xl font-bold text-lg hover:bg-white/10 transition-all flex items-center justify-center gap-2"
 							>
 								<FiLogIn size={20} /> Existing User
 							</button>
