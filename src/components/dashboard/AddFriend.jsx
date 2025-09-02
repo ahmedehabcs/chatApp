@@ -2,6 +2,7 @@ import { useEffect, useState, lazy } from 'react';
 import { FiUserPlus, FiLoader, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import { outgoingRequest } from "../../api/friends.js";
 import { useParams, useNavigate } from "react-router-dom";
+import formatPublicKey from '../../utils/FormatPublicKey.js';
 const AddFriendInput = lazy(() => import("./AddFriendInput.jsx"));
 
 export default function AddFriend() {
@@ -21,8 +22,9 @@ export default function AddFriend() {
 
 
     const handleSendRequest = async (customPK) => {
-        const cleanPK = (customPK || publicKey).replace(/\s+/g, "").toLowerCase();
-        if (!cleanPK) return;
+        let rawKey = customPK || publicKey;
+        if (!rawKey) return;
+        let cleanPK = formatPublicKey(rawKey);
         setLoading(true);
         setNoteMessage("");
         setSuccess(null);

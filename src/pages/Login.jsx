@@ -5,6 +5,7 @@ import { FiLogIn, FiKey, FiAlertCircle } from "react-icons/fi";
 import { ImSpinner8 } from "react-icons/im";
 import { AnimatedBubbles } from "../components/AnimatedBg.jsx";
 import { signChallenge } from "../utils/crypto";
+import formatPublicKey from "../utils/FormatPublicKey.js";
 
 export default function Login() {
 	const prvKey = useRef(null);
@@ -15,14 +16,6 @@ export default function Login() {
 	const [isFocusedPublic, setIsFocusedPublic] = useState(false);
 	const [hasPubKey, setHasPubKey] = useState(!!window.localStorage.getItem("publicKey"));
 	const navigate = useNavigate();
-
-	const formatPublicKey = (pastedKey) => {
-		const header = "-----BEGIN PUBLIC KEY-----";
-		const footer = "-----END PUBLIC KEY-----";
-		let body = pastedKey.replace(header, "").replace(footer, "").replace(/\s+/g, "");
-		body = body.match(/.{1,64}/g)?.join("\n") || "";
-		return `${header}\n${body}\n${footer}`;
-	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
