@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { listFriends, removeFriend } from "../../api/friends.js";
 import { MdOutlineDriveFileRenameOutline } from "react-icons/md";
 import { FiTrash2 } from 'react-icons/fi';
-import { listFriends, removeFriend } from "../../api/friends.js";
 import NoteMessageStruct from '../NoteMessageStruct.jsx';
 import NicknamePopup from "../NicknamePopup.jsx";
+import truncatePublicKey from "../../utils/truncatePublicKey.js";
 
 export default function FriendList({ setTotalFriend, selectedFriend, setSelectedFriend, showChat, setShowChat }) {
     const [friends, setFriends] = useState([]);
@@ -16,7 +17,7 @@ export default function FriendList({ setTotalFriend, selectedFriend, setSelected
         try {
             const res = await listFriends();
             setFriends(res.friends);
-            setTotalFriend(prev => ({...prev, friends: res.friends.length}));
+            setTotalFriend(prev => ({ ...prev, friends: res.friends.length }));
         } catch (error) {
             setNoteMessage(error.response?.data?.message || `Failed to list your friend`);
             setSuccess(false);
@@ -25,7 +26,13 @@ export default function FriendList({ setTotalFriend, selectedFriend, setSelected
 
     useEffect(() => {
         friendList();
-    }, [])
+        const isLargeScreen = window.innerWidth >= 1024;
+        if (showChat && !isLargeScreen) return;
+        const interval = setInterval(() => {
+            friendList();
+        }, 6000);
+        return () => clearInterval(interval);
+    }, []);
 
     // remove friend
     const handleRemoveFriend = async (e, pk) => {
@@ -52,28 +59,27 @@ export default function FriendList({ setTotalFriend, selectedFriend, setSelected
         window.history.pushState({ chatOpen: true }, '');
     };
 
-    
     return (
         <div className={`relative h-full flex flex-col ${showChat ? 'hidden lg:block' : 'block'}`}>
             <div className="flex-1 min-h-0 overflow-hidden pb-42">
                 <div className="h-full overflow-y-auto scrollbar-hide">
                     <NoteMessageStruct message={noteMessage} success={success} onClear={() => { setNoteMessage(""); setSuccess(null); }} />
                     <div className="divide-y divide-[var(--color-border)]">
-                        {friends.map(friend => (
-                            <div key={friend.publicKey} className={`p-4 flex items-center justify-between cursor-pointer hover:bg-[var(--color-main-bg)] transition-all duration-200 ${selectedFriend === friend.publicKey ? 'bg-[var(--color-main-bg)]' : ''}`} onClick={() => handleSelectFriend(friend)}>
+                        {friends.map((friend, index) => (
+                            <div key={friend.publicKey} className={`p-4 flex items-center justify-between cursor-pointer hover:bg-[#000000b4] transition-all duration-200 ${selectedFriend === friend.publicKey ? 'bg-[var(--color-main-bg)]' : ''}`} onClick={() => handleSelectFriend(friend)}>
                                 <div className="flex items-center">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--color-main)] flex items-center justify-center text-[var(--color-text-inverse)] font-semibold text-sm md:text-base">
-                                        {(friend.nickname ?? friend.publicKey).substring(0, 2).toUpperCase()}
-                                    </div>
+                                    <p className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--color-main)] flex items-center justify-center text-[var(--color-text-inverse)] font-semibold text-sm md:text-base">{index + 1}</p>
                                     <div className="ml-3">
-                                        <h3 className="text-sm md:text-base font-medium text-[var(--color-text)] font-mono">{friend.nickname ?? friend.publicKey}</h3>
+                                        <h3 className="text-sm md:text-base font-medium text-[var(--color-text)] font-mono">
+                                            {truncatePublicKey(friend.nickname ?? friend.publicKey)}
+                                        </h3>
                                         <p className="text-xs md:text-sm text-[var(--color-text-light)] truncate max-w-[150px] md:max-w-xs">
                                             Start a conversation...
                                         </p>
                                     </div>
                                 </div>
                                 <div className='flex gap-2'>
-                                    <button onClick={(e) => {e.stopPropagation(); setPopupFriend(friend)}} title='add alice' className='p-2 text-[var(--color-secondary)] hover:bg-[var(--color-secondary-bg)] rounded-full transition-colors'>
+                                    <button onClick={(e) => { e.stopPropagation(); setPopupFriend(friend) }} title='add alice' className='p-2 text-[var(--color-secondary)] hover:bg-[var(--color-secondary-light)] rounded-full transition-colors'>
                                         <MdOutlineDriveFileRenameOutline />
                                     </button>
                                     <button onClick={(e) => { handleRemoveFriend(e, friend.publicKey) }} className="p-2 text-[var(--color-error)] hover:bg-[var(--color-error-bg)] rounded-full transition-colors" title='remove friend'>
@@ -90,9 +96,7 @@ export default function FriendList({ setTotalFriend, selectedFriend, setSelected
                     </div>
                 </div>
             </div>
-            {popupFriend && (
-                <NicknamePopup friend={popupFriend} setNoteMessage={setNoteMessage} setSuccess={setSuccess} setClosePopUp={() => setPopupFriend(null)} friendList={friendList} />
-            )}
+            {popupFriend && (<NicknamePopup friend={popupFriend} setNoteMessage={setNoteMessage} setSuccess={setSuccess} setClosePopUp={() => setPopupFriend(null)} friendList={friendList} />)}
         </div>
     );
 }

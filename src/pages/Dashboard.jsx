@@ -51,7 +51,7 @@ export default function Dashboard() {
                             {activeView === 'chats' ? (
                                 <FriendList setTotalFriend={setTotalFriend} selectedFriend={selectedFriend} setSelectedFriend={setSelectedFriend} showChat={showChat} setShowChat={setShowChat} />
                             ) : (
-                                <FriendRequests setTotalFriend={setTotalFriend} />
+                                <FriendRequests setTotalFriend={setTotalFriend} showChat={showChat} />
                             )}
                         </div>
                     </div>

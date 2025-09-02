@@ -1,44 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --color-main: #ff4d6d;           /* neon pink */
-  --color-main-hover: #ff6f91;
-  --color-main-light: #ff9ab3;     /* glow for shapes */
+	--color-main: #ff4d6d;
+	--color-main-hover: #ff6f91c4;
+	--color-main-light: #ff9ab3;
 
-  --color-secondary: #ffb84d;      /* neon orange */
-  --color-secondary-hover: #ffc680;
-  --color-secondary-light: #ffe0a3; 
+	--color-secondary: #ffb84d;
+	--color-secondary-hover: #ffc680;
+	--color-secondary-light: #ffe0a37c;
 
-  --color-info: #4dffea;           /* neon cyan */
-  --color-info-bg: #0f1f1f;        
+	--color-info: #4dffea;
+	--color-info-bg: #0f1f1f;
 
-  --color-bg: #000000;             /* black page bg */
-  --color-bg-dark: #111111;
-  --color-surface: #1a1a1a;        /* dark surfaces */
-  --color-border: #333333;
+	--color-bg: #000000;
+	--color-bg-dark: #111111;
+	--color-surface: #1a1a1a;
+	--color-border: #333333;
 
-  --color-text: #f5f5f5;           /* light text */
-  --color-text-light: #aaaaaa;     
-  --color-text-inverse: #000000;   
+	--color-text: #f5f5f5;
+	--color-text-light: #aaaaaa;
+	--color-text-inverse: #000000;
 
-  --color-success: #22c55e;        /* bright green */
-  --color-success-bg: #064e3b;
+	--color-success: #22c55e;
+	--color-success-bg: #064e3b;
 
-  --color-error: #ff3333;          /* bright red */
-  --color-error-bg: #4a0000;
+	--color-error: #ff3333;
+	--color-error-bg: #4a0000;
 
-  --color-warning: #ffd700;        /* gold/yellow */
-  --color-warning-bg: #4a3b00;
+	--color-warning: #ffd700;
+	--color-warning-bg: #4a3b00;
 }
 
 
 * {
 	outline: none;
-	/* user-select: none; */
 	scroll-behavior: smooth;
 	scrollbar-color: #64748b #f8fafc;
 	scrollbar-width: thin;
 }
+
+body{
+	background-color: #000000d8;
+}
+
 /* scroll bar */
 *::-webkit-scrollbar {
 	width: 2px;
@@ -53,143 +57,154 @@
 *::-webkit-scrollbar-track {
 	background-color: var(--game-card);
 }
-/* Hide scrollbar for all browsers */
 .scrollbar-none {
-  /* For Chrome, Edge, Safari */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none;
+	-ms-overflow-style: none;
 }
-
 .scrollbar-none::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
+	display: none;
 }
 
-
-/* Base animations */
+/* animations */
 @keyframes move-bg-1 {
+
 	0%,
 	100% {
 		transform: translate(0, 0);
 	}
+
 	50% {
 		transform: translate(50px, 50px);
 	}
 }
 @keyframes move-bg-2 {
+
 	0%,
 	100% {
 		transform: translate(0, 0);
 	}
+
 	50% {
 		transform: translate(-50px, 50px);
 	}
 }
 @keyframes move-bg-3 {
+
 	0%,
 	100% {
 		transform: translate(0, 0);
 	}
+
 	50% {
 		transform: translate(0, -50px);
 	}
 }
-
-/* Wave animations */
 @keyframes wave-1 {
+
 	0%,
 	100% {
 		transform: translateX(0) rotate(0deg);
 	}
+
 	50% {
 		transform: translateX(50px) rotate(2deg);
 	}
 }
 @keyframes wave-2 {
+
 	0%,
 	100% {
 		transform: translateX(0) rotate(0deg);
 	}
+
 	50% {
 		transform: translateX(-50px) rotate(-2deg);
 	}
 }
-
-/* Float animations */
 @keyframes float-1 {
+
 	0%,
 	100% {
 		transform: translate(0, 0) rotate(0deg);
 	}
+
 	50% {
 		transform: translate(30px, 30px) rotate(5deg);
 	}
 }
 @keyframes float-2 {
+
 	0%,
 	100% {
 		transform: translate(0, 0) rotate(0deg);
 	}
+
 	50% {
 		transform: translate(-40px, -20px) rotate(-5deg);
 	}
 }
 @keyframes float-3 {
+
 	0%,
 	100% {
 		transform: translate(0, 0);
 	}
+
 	50% {
 		transform: translate(20px, -30px);
 	}
 }
-
-/* Grid animation */
 @keyframes grid-pulse {
+
 	0%,
 	100% {
 		opacity: 0.05;
 	}
+
 	50% {
 		opacity: 0.1;
 	}
 }
-
-/* Blob animations */
 @keyframes blob-1 {
+
 	0%,
 	100% {
 		border-radius: "33% 67% 70% 30% / 30% 30% 70% 70%";
 		transform: translate(0, 0);
 	}
+
 	50% {
 		border-radius: "50% 50% 33% 67% / 55% 27% 73% 45%";
 		transform: translate(50px, 50px);
 	}
 }
 @keyframes blob-2 {
+
 	0%,
 	100% {
 		border-radius: "67% 33% 47% 53% / 37% 41% 59% 63%";
 		transform: translate(0, 0);
 	}
+
 	50% {
 		border-radius: "33% 67% 61% 39% / 45% 52% 48% 55%";
 		transform: translate(-50px, -30px);
 	}
 }
 @keyframes blob-3 {
+
 	0%,
 	100% {
 		border-radius: "63% 37% 56% 44% / 25% 66% 34% 75%";
 		transform: translate(0, 0);
 	}
+
 	50% {
 		border-radius: "44% 56% 32% 68% / 66% 34% 66% 34%";
 		transform: translate(30px, -40px);
 	}
 }
 
-/* Animation classes */
 .animate-move-bg-1 {
 	animation: move-bg-1 15s ease-in-out infinite;
 }
@@ -199,14 +214,12 @@
 .animate-move-bg-3 {
 	animation: move-bg-3 25s ease-in-out infinite;
 }
-
 .animate-wave-1 {
 	animation: wave-1 18s ease-in-out infinite;
 }
 .animate-wave-2 {
 	animation: wave-2 22s ease-in-out infinite;
 }
-
 .animate-float-1 {
 	animation: float-1 12s ease-in-out infinite;
 }
@@ -216,11 +229,9 @@
 .animate-float-3 {
 	animation: float-3 20s ease-in-out infinite;
 }
-
 .animate-grid-pulse {
 	animation: grid-pulse 8s ease-in-out infinite;
 }
-
 .animate-blob-1 {
 	animation: blob-1 20s ease-in-out infinite;
 }
@@ -231,19 +242,17 @@
 	animation: blob-3 28s ease-in-out infinite;
 }
 
-/* Company page */
-
 @keyframes fade-in {
 	from {
 		opacity: 0;
 		transform: translateY(20px);
 	}
+
 	to {
 		opacity: 1;
 		transform: translateY(0);
 	}
 }
-
 .animate-fade-in {
 	animation: fade-in 0.8s ease-out forwards;
 }

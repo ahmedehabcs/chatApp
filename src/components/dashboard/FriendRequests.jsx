@@ -2,15 +2,12 @@ import { useEffect, useState } from 'react';
 import { FiCheck, FiX } from 'react-icons/fi';
 import { incomingRequests, approveRequest, rejectRequest } from '../../api/friends.js';
 import NoteMessageStruct from '../NoteMessageStruct.jsx';
-import useSocket from '../../hooks/useSocket.jsx';
-import useAuth from '../../hooks/useAuth.jsx';
+import truncatePublicKey from "../../utils/truncatePublicKey.js";
 
-export default function FriendRequests({ setTotalFriend }) {
+export default function FriendRequests({ setTotalFriend, showChat }) {
     const [requests, setRequests] = useState([]);
     const [noteMessage, setNoteMessage] = useState("");
     const [success, setSuccess] = useState(null);
-    const { user: myPublicKey } = useAuth();
-    const socketRef = useSocket(myPublicKey);
 
     const incomingReqs = async () => {
         try {
@@ -18,28 +15,19 @@ export default function FriendRequests({ setTotalFriend }) {
             setRequests(res.incomingRequests);
             setTotalFriend(prev => ({ ...prev, requests: res.incomingRequests.length }));
         } catch (error) {
-            setNoteMessage(error.response?.data?.message || "sth went wrong");
+            setNoteMessage(error.response?.data?.message || "something went wrong!");
         }
     }
 
     useEffect(() => {
         incomingReqs();
-        if (!socketRef.current) return;
-
-        const handler = (newRequest) => {
-            setRequests(prev => [...prev, newRequest]);
-            setTotalFriend(prev => ({ ...prev, requests: prev.requests + 1 }));
-            setNoteMessage(`New friend request from ${newRequest.username}`);
-            setSuccess(true);
-        };
-
-        socketRef.current.on("newFriendRequest", handler);
-
-        return () => {
-            socketRef.current.off("newFriendRequest", handler);
-        };
-    }, [socketRef.current]);
-
+        const isLargeScreen = window.innerWidth >= 1024;
+        if (showChat && !isLargeScreen) return;
+        const interval = setInterval(() => {
+            incomingReqs();
+        }, 6000);
+        return () => clearInterval(interval);
+    }, [showChat]);
 
     // accept or reject
     const handleRequest = async (pk, action) => {
@@ -47,10 +35,7 @@ export default function FriendRequests({ setTotalFriend }) {
             const res = action === "approve" ? await approveRequest(pk) : await rejectRequest(pk);
             setNoteMessage(res.message);
             setSuccess(true);
-
-            // Update local state immediately without refetching
-            setRequests(prev => prev.filter(request => request.publicKey !== pk));
-            setTotalFriend(prev => ({ ...prev, requests: prev.requests - 1 }));
+            incomingReqs();
         } catch (error) {
             setNoteMessage(error.response?.data?.message || `Failed to ${action === "approve" ? "approve" : "reject"} request`);
             setSuccess(false);
@@ -63,15 +48,15 @@ export default function FriendRequests({ setTotalFriend }) {
                 <NoteMessageStruct message={noteMessage} success={success} onClear={() => { setNoteMessage(""); setSuccess(null); }} />
                 {requests.length > 0 ? (
                     <div className="space-y-4 pb-42">
-                        {requests.map(request => (
+                        {requests.map((request, index) => (
                             <div key={request.id} className="p-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg)]">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center">
-                                        <div className="w-10 h-10 rounded-full bg-[var(--color-secondary)] flex items-center justify-center text-[var(--color-text-inverse)] font-semibold text-sm">
-                                            {request.publicKey.substring(0, 2).toUpperCase()}
-                                        </div>
+                                        <p className="w-10 h-10 rounded-full bg-[var(--color-secondary)] flex items-center justify-center text-[var(--color-text-inverse)] font-semibold text-sm">{index + 1}</p>
                                         <div className="ml-3">
-                                            <h3 className="text-sm font-medium text-[var(--color-text)] font-mono">{request.publicKey}</h3>
+                                            <h3 className="text-sm font-medium text-[var(--color-text)] font-mono">
+                                                {truncatePublicKey(request.publicKey)}
+                                            </h3>
                                             <p className="text-xs text-[var(--color-text-light)]">{new Date(request.timeStamp).toLocaleString()}</p>
                                         </div>
                                     </div>

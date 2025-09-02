@@ -1,7 +1,6 @@
 import Chat from "../models/Chat.js";
 import Message from "../models/Message.js";
-import sanitizeHtml from "sanitize-html";
-
+3
 export const handleMessageEvents = (io, socket) => {
     // Join chat
     socket.on("joinChat", async ({ otherPublicKey }) => {
@@ -29,14 +28,9 @@ export const handleMessageEvents = (io, socket) => {
             if (!chatId) {
                 return socket.emit("error", { message: "Chat ID is required" });
             }
-            if (!text || !text.trim()) {
+            if (!text || text.trim() === "") {
                 return socket.emit("error", { message: "Message cannot be empty" });
             }
-
-            const cleanText = sanitizeHtml(text.trim(), {
-                allowedTags: [],
-                allowedAttributes: {},
-            });
 
             const chat = await Chat.findOne({ chatId });
             if (!chat) {
@@ -49,7 +43,7 @@ export const handleMessageEvents = (io, socket) => {
             const newMessage = new Message({
                 chatId,
                 sender,
-                text: cleanText,
+                text: text,
             });
             await newMessage.save();
 

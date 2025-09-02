@@ -45,6 +45,8 @@ export default function Login() {
 			window.location.reload();
 		} catch (err) {
 			setError(err?.response?.data?.message || err.message || "Login failed. Please try again.");
+			setHasPubKey(false);
+			localStorage.removeItem("publicKey");
 		} finally {
 			setIsLoading(false);
 		}

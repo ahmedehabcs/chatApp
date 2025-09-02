@@ -2,65 +2,77 @@ import User from "../models/User.js";
 import Chat from "../models/Chat.js";
 import handleSendErrors from "../utils/handleSendErrors.js";
 import Message from "../models/Message.js";
-import { getIO } from "../socket/index.js";
+import mongoose from "mongoose";
 
 // POST /api/friends/request
 export const outgoingRequest = async (req, res, next) => {
     try {
         const senderPublicKey = req.user.publicKey;
-        const { receiverPublicKey } = req.body;
+        const { receiverPublicKey, receiverId } = req.body;
 
-        if (senderPublicKey === receiverPublicKey) {
+        let finalReceiverPublicKey = null;
+
+        if (receiverId) {
+            if (!mongoose.Types.ObjectId.isValid(receiverId)) {
+                return handleSendErrors("Receiver not found.", false, 404, next);
+            }
+            const receiverUser = await User.findById(receiverId);
+            if (!receiverUser) {
+                return handleSendErrors("Receiver not found.", false, 404, next);
+            }
+            finalReceiverPublicKey = receiverUser.publicKey;
+        } else if (receiverPublicKey) {
+            // Otherwise use provided PK
+            finalReceiverPublicKey = receiverPublicKey;
+        }
+
+        if (!finalReceiverPublicKey) {
+            return handleSendErrors("Receiver info is required.", false, 400, next);
+        }
+
+        if (senderPublicKey === finalReceiverPublicKey) {
             return handleSendErrors("You cannot send a friend request to yourself.", false, 400, next);
         }
 
         // Get both users
-        const sender = await User.findOne({ publicKey: senderPublicKey });
-        const receiver = await User.findOne({ publicKey: receiverPublicKey });
+        const [sender, receiver] = await Promise.all([
+            User.findOne({ publicKey: senderPublicKey }),
+            User.findOne({ publicKey: finalReceiverPublicKey }),
+        ]);
 
         if (!sender) {
-            return handleSendErrors("Sender user not found", false, 404, next);
+            return handleSendErrors("Sender user not found.", false, 404, next);
         }
         if (!receiver) {
-            return handleSendErrors("friend not found.", false, 400, next);
+            return handleSendErrors("Receiver not found.", false, 404, next);
         }
 
-        // Check if already friends
-        if (sender.friends.some(f => f.publicKey === receiverPublicKey)) {
+        // Already friends?
+        if (sender.friends.some(f => f.publicKey === finalReceiverPublicKey)) {
             return handleSendErrors("You are already friends.", false, 400, next);
         }
 
-        // Check if request already sent
-        if (sender.outgoingRequests.some(r => r.publicKey === receiverPublicKey)) {
+        // Already sent?
+        if (sender.outgoingRequests.some(r => r.publicKey === finalReceiverPublicKey)) {
             return handleSendErrors("Friend request already sent.", false, 400, next);
         }
 
-        // Check if the receiver has already sent a request
+        // Receiver already sent?
         if (receiver.outgoingRequests.some(r => r.publicKey === senderPublicKey)) {
-            return handleSendErrors( "This user has already sent you a friend request.", false, 400, next);
+            return handleSendErrors("This user has already sent you a friend request.", false, 400, next);
         }
 
-        // Update sender (add outgoing request)
-        sender.outgoingRequests.push({ publicKey: receiverPublicKey });
-        await sender.save();
+        // Save both sides
+        sender.outgoingRequests.push({ publicKey: finalReceiverPublicKey });
+        receiver.incomingRequests.push({ publicKey: senderPublicKey });
 
-        // Update receiver (add incoming request if not already there)
-        receiver.incomingRequests.push({  publicKey: senderPublicKey });
-        await receiver.save();
-
-        // Emit real-time notification to receiver
-        try {
-            const io = getIO();
-            io.to(`user_${receiverPublicKey}`).emit("newFriendRequest", { publicKey: senderPublicKey, timestamp: new Date() });
-        } catch (socketError) {
-            console.log("Socket error (non-critical):", socketError.message);
-        }
+        await Promise.all([sender.save(), receiver.save()]);
 
         return res.status(200).json({ success: true, message: "Friend request sent successfully." });
     } catch (error) {
-        handleSendErrors(error || "Internal server error", false, 500, next);
+        handleSendErrors(error.message || "Internal server error", false, 500, next);
     }
-}
+};
 
 // GET /api/friends/receive
 export const incomingRequests = async (req, res, next) => {
@@ -76,7 +88,7 @@ export const incomingRequests = async (req, res, next) => {
     }
 }
 
-// POST /api/friends/approve ## comming back later for creating chat also
+// POST /api/friends/approve
 export const approveRequest = async (req, res, next) => {
     try {
         const userPublicKey = req.user.publicKey;
@@ -177,7 +189,7 @@ export const listFriends = async (req, res, next) => {
     }
 }
 
-// POST /api/friends/unfriend  ## comming back later for deleting chat also
+// POST /api/friends/unfriend
 export const removeFriend = async (req, res, next) => {
     try {
         const userPublicKey = req.user.publicKey;

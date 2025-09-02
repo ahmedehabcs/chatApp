@@ -1,13 +1,13 @@
 import { useState, useRef } from "react";
-import { FiUser, FiX, FiLogOut, FiShare2, FiDownload } from "react-icons/fi";
+import { FiUser, FiX, FiLogOut, FiShare2, FiCopy } from "react-icons/fi";
 import { QRCodeSVG } from "qrcode.react";
-import useAuth from "../hooks/useAuth.jsx";
 import { logout } from "../api/auth.js";
+import useAuth from "../hooks/useAuth.jsx";
 import URL from "./URL.jsx";
 
 export default function ProfilePopup({ showProfile, setShowProfile }) {
-    const { user: publicKey } = useAuth();
-    const [activeTab, setActiveTab] = useState("key"); // 'key' or 'qr'
+    const { user } = useAuth();
+    const [activeTab, setActiveTab] = useState("key");
     const qrRef = useRef();
 
     const logoutbtn = async () => {
@@ -17,100 +17,88 @@ export default function ProfilePopup({ showProfile, setShowProfile }) {
         window.location.reload();
     };
 
-    // Share link
     const handleShareKey = async () => {
-        const link = `${URL}/#/dashboard/add/${encodeURIComponent(publicKey)}`;
+        const link = `${URL}/#/dashboard/add/${encodeURIComponent(user?.id)}`;
         const shareData = {
             title: "My Public Key",
             text: "Add me as a friend on Secure Chat!",
             url: link,
         };
-
         try {
             if (navigator.share) {
                 await navigator.share(shareData);
             } else {
-                // fallback copy to clipboard
                 await navigator.clipboard.writeText(link);
-                alert("Link copied to clipboard!");
             }
         } catch (err) {
             console.log("Error sharing:", err);
         }
     };
 
-
     if (!showProfile) return null;
 
     return (
-        <div className="absolute right-0 mt-2 w-80 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg shadow-lg z-50 overflow-hidden">
-            <div className="p-4">
-                <h2 className="text-[var(--color-text)] font-semibold flex items-center gap-2">
-                    <FiUser size={18} />
-                    My Identity
-                </h2>
-                <p className="text-xs text-[var(--color-text-light)] mt-1">
-                    This is your unique public key that others use to message you
-                </p>
-            </div>
-
-            {/* Tab Navigation */}
-            <div className="flex border-b border-[var(--color-border)]">
-                <button onClick={() => setActiveTab("key")} className={`flex-1 py-2 text-sm font-medium ${activeTab === "key" ? "text-[var(--color-main)] border-b-2 border-[var(--color-main)]" : "text-[var(--color-text-light)] hover:text-[var(--color-text)]"}`}>
-                    Public Key
-                </button>
-                <button onClick={() => setActiveTab("qr")} className={`flex-1 py-2 text-sm font-medium ${activeTab === "qr" ? "text-[var(--color-main)] border-b-2 border-[var(--color-main)]" : "text-[var(--color-text-light)] hover:text-[var(--color-text)]"}`}>
-                    QR Code
-                </button>
-            </div>
-
-            <div className="p-4">
-                {activeTab === "key" ? (
-                    <div className="mb-3">
-                        <label className="text-xs font-medium text-[var(--color-text-light)] block mb-1">
-                            YOUR PUBLIC KEY
-                        </label>
-                        <div className="relative">
-                            <p className="text-sm text-[var(--color-text)] break-all p-3 bg-[var(--color-bg-dark)] rounded border border-[var(--color-border)] font-mono overflow-x-auto">
-                                {publicKey}
-                            </p>
-                            <div className="absolute top-2 right-2 flex gap-1">
-                                <button onClick={handleShareKey} className="p-1 text-[var(--color-text-light)] hover:text-[var(--color-main)] transition-colors" title="Share public key">
-                                    <FiShare2 size={14} />
-                                </button>
+        <div className="fixed inset-0 z-40" onClick={() => setShowProfile(false)}>
+            <div className="absolute right-4 top-18 w-80 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg shadow-lg z-50 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="p-4">
+                    <h2 className="text-[var(--color-text)] font-semibold flex items-center gap-2">
+                        <FiUser size={18} />
+                        My Identity
+                    </h2>
+                    <p className="text-xs text-[var(--color-text-light)] mt-1">
+                        This is your unique public key that others use to message you
+                    </p>
+                </div>
+                <div className="flex border-b border-[var(--color-border)]">
+                    <button onClick={() => setActiveTab("key")} className={`flex-1 py-2 text-sm font-medium ${activeTab === "key" ? "text-[var(--color-main)] border-b-2 border-[var(--color-main)]" : "text-[var(--color-text-light)] hover:text-[var(--color-text)]"}`}>
+                        Public Key
+                    </button>
+                    <button onClick={() => setActiveTab("qr")} className={`flex-1 py-2 text-sm font-medium ${activeTab === "qr" ? "text-[var(--color-main)] border-b-2 border-[var(--color-main)]" : "text-[var(--color-text-light)] hover:text-[var(--color-text)]"}`}>
+                        QR Code
+                    </button>
+                </div>
+                <div className="p-4">
+                    {activeTab === "key" ? (
+                        <div className="mb-3">
+                            <div className="flex justify-between items-center mb-2 px-1">
+                                <label className="text-xs font-medium text-[var(--color-text-light)] block">
+                                    YOUR PUBLIC KEY
+                                </label>
+                                <div className="flex gap-3 items-center">
+                                    <FiCopy onClick={() => navigator.clipboard.writeText(user?.publicKey)} size={14} className="hover:text-[var(--color-main)] duration-200" />
+                                    <FiShare2 onClick={handleShareKey} size={14} className="hover:text-[var(--color-main)] duration-200" />
+                                </div>
+                            </div>
+                            <div className="relative">
+                                <input type="text" value={user?.publicKey} readOnly className=" w-full text-sm text-[var(--color-text)] break-all p-3 bg-[var(--color-bg-dark)] rounded border border-[var(--color-border)] font-mono overflow-x-auto" />
                             </div>
                         </div>
-                    </div>
-                ) : (
-                    <div className="mb-3">
-                        <label className="text-xs font-medium text-[var(--color-text-light)] block mb-2 text-center">
-                            SCAN TO ADD ME
-                        </label>
-                        <div className="flex flex-col items-center">
-                            <div className="p-4 bg-white rounded-lg border border-[var(--color-border)]">
-                                <QRCodeSVG
-                                    ref={qrRef}
-                                    value={`${URL}/#/dashboard/add/${encodeURIComponent(publicKey)}`}
-                                    size={160}
-                                    level="M"
-                                    includeMargin={true}
-                                />
+                    ) : (
+                        <div className="mb-3">
+                            <label className="text-xs font-medium text-[var(--color-text-light)] block mb-2 text-center">
+                                SCAN TO ADD ME
+                            </label>
+                            <div className="flex flex-col items-center">
+                                <div className="p-4 bg-white rounded-lg border border-[var(--color-border)]">
+                                    <QRCodeSVG
+                                        ref={qrRef}
+                                        value={`${URL}/#/dashboard/add/${user?.id}`}
+                                        size={180}
+                                        level="H"
+                                        includeMargin={true}
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-
-                {/* Logout Button */}
-                <button onClick={logoutbtn} className="w-full mb-3 px-4 py-2 bg-[var(--color-error)] text-[var(--color-text-inverse)] rounded-md hover:bg-[var(--color-error)]/90 transition-colors flex items-center justify-center gap-2">
-                    <FiLogOut size={16} />
-                    Logout
-                </button>
-
-                {/* Close Button */}
-                <button onClick={() => setShowProfile(false)} className="w-full px-4 py-2 bg-[var(--color-main)] text-[var(--color-text-inverse)] rounded-md hover:bg-[var(--color-main-hover)] transition-colors flex items-center justify-center gap-2">
-                    <FiX size={16} />
-                    Close
-                </button>
+                    )}
+                    <button onClick={logoutbtn} className="w-full mb-3 px-4 py-2 bg-[var(--color-error)] text-[var(--color-text-inverse)] rounded-md hover:bg-[var(--color-error)]/90 transition-colors flex items-center justify-center gap-2">
+                        <FiLogOut size={16} />
+                        Logout
+                    </button>
+                    <button onClick={() => setShowProfile(false)} className="w-8 h-8 rounded-full absolute top-3 right-2 text-white hover:bg-[var(--color-main-hover)] transition-colors flex items-center justify-center gap-2">
+                        <FiX size={16} />
+                    </button>
+                </div>
             </div>
         </div>
     );

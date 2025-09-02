@@ -1,8 +1,8 @@
 import API from "./index.js";
 
 // send request
-export async function outgoingRequest(receiverPublicKey){
-    const res = await API.post("/friends/request", { receiverPublicKey });
+export async function outgoingRequest({ receiverPublicKey, receiverId }) {
+    const res = await API.post("/friends/request", { receiverPublicKey, receiverId });
     return res.data;
 }
 

@@ -1,63 +1,56 @@
 import { useEffect, useState, lazy } from 'react';
-import { FiUserPlus, FiLoader, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { FiUserPlus, FiLoader } from 'react-icons/fi';
 import { outgoingRequest } from "../../api/friends.js";
 import { useParams, useNavigate } from "react-router-dom";
 import formatPublicKey from '../../utils/FormatPublicKey.js';
+import NoteMessageStruct from '../NoteMessageStruct.jsx';
 const AddFriendInput = lazy(() => import("./AddFriendInput.jsx"));
 
 export default function AddFriend() {
-    const [publicKey, setPublicKey] = useState("");
+    const [inputValue, setInputValue] = useState("");
     const [noteMessage, setNoteMessage] = useState("");
     const [success, setSuccess] = useState(null); // true | false | null
     const [loading, setLoading] = useState(false);
     const { key } = useParams();
     const navigate = useNavigate();
 
+    const isPublicKey = (str) => str?.trim().startsWith("-----BEGIN");
     useEffect(() => {
         if (key) {
-            setPublicKey(key);
-            handleSendRequest(key);
+            handleSendRequest({ raw: key });
         }
-    }, [key])
+    }, [key]);
 
-
-    const handleSendRequest = async (customPK) => {
-        let rawKey = customPK || publicKey;
-        if (!rawKey) return;
-        let cleanPK = formatPublicKey(rawKey);
+    const handleSendRequest = async ({ raw } = {}) => {
+        const value = raw?.trim() || inputValue?.trim();
+        if (!value) return;
+        const payload = isPublicKey(value) ? { receiverPublicKey: formatPublicKey(value) } : { receiverId: value };
         setLoading(true);
         setNoteMessage("");
         setSuccess(null);
+
         try {
-            const res = await outgoingRequest(cleanPK);
+            const res = await outgoingRequest(payload);
             setNoteMessage(res.message);
             setSuccess(res.success);
-            if (res.success) {
-                setTimeout(() => {
-                    setNoteMessage("");
-                    setSuccess(null);
-                }, 5000);
-            }
         } catch (error) {
             setNoteMessage(error.response?.data?.message || "Something went wrong");
             setSuccess(false);
         } finally {
             setLoading(false);
             navigate("/dashboard", { replace: true });
-            setPublicKey("");
+            setInputValue("");
         }
     };
 
     const handleInputChange = (e) => {
         setNoteMessage("");
         setSuccess(null);
-        setPublicKey(e.target.value);
+        setInputValue(e.target.value);
     };
 
     const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            handleSendRequest();
-        }
+        if (e.key === "Enter") handleSendRequest();
     };
 
     return (
@@ -66,41 +59,10 @@ export default function AddFriend() {
                 <FiUserPlus className="mr-2 sm:mr-3 text-[var(--color-main)]" />
                 Add New Friend
             </h2>
-
-            {noteMessage && (
-                <div
-                    className={`mb-3 sm:mb-4 p-3 rounded-lg sm:rounded-xl flex items-center shadow-sm sm:shadow-md border ${success
-                        ? "bg-[var(--color-success-bg)] text-[var(--color-success)] border-[var(--color-success)]/30"
-                        : "bg-[var(--color-error-bg)] text-[var(--color-error)] border-[var(--color-error)]/30"
-                        }`}
-                >
-                    {success ? (
-                        <FiCheckCircle className="mr-2 flex-shrink-0" size={16} />
-                    ) : (
-                        <FiAlertCircle className="mr-2 flex-shrink-0" size={16} />
-                    )}
-                    <span className="text-xs sm:text-sm">{noteMessage}</span>
-                </div>
-            )}
-
+            <NoteMessageStruct message={noteMessage} success={success} onClear={() => { setNoteMessage(""); setSuccess(null); }}/>
             <div className="flex flex-col gap-2 sm:gap-3">
-                <AddFriendInput
-                    handleInputChange={handleInputChange}
-                    handleKeyPress={handleKeyPress}
-                    publicKey={publicKey}
-                    setPublicKey={setPublicKey}
-                />
-
-                <button
-                    onClick={() => handleSendRequest()}
-                    disabled={loading}
-                    className="w-full sm:w-auto px-4 py-2.5 sm:px-5 sm:py-3 bg-gradient-to-r from-[var(--color-main)] to-[var(--color-main-hover)] 
-                        text-[var(--color-text-inverse)] font-medium rounded-lg sm:rounded-xl 
-                        hover:from-[var(--color-main-hover)] hover:to-[var(--color-main-light)]
-                        disabled:opacity-70 disabled:cursor-not-allowed transition-all 
-                        flex items-center justify-center shadow-sm sm:shadow-lg shadow-[var(--color-main)]/10
-                        text-sm sm:text-base"
-                >
+                <AddFriendInput handleInputChange={handleInputChange} handleKeyPress={handleKeyPress} publicKey={inputValue} setPublicKey={setInputValue} />
+                <button onClick={() => handleSendRequest()} disabled={loading} className="w-full sm:w-auto px-4 py-2.5 sm:px-5 sm:py-3 bg-gradient-to-r from-[var(--color-main)] to-[var(--color-main-hover)] text-[var(--color-text-inverse)] font-medium rounded-lg sm:rounded-xl hover:from-[var(--color-main-hover)] hover:to-[var(--color-main-light)] disabled:opacity-70 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-sm sm:shadow-lg shadow-[var(--color-main)]/10 text-sm sm:text-base">
                     {loading ? (
                         <>
                             <FiLoader className="animate-spin mr-2" size={16} />
@@ -114,9 +76,8 @@ export default function AddFriend() {
                     )}
                 </button>
             </div>
-
             <p className="text-xs text-[var(--color-text-light)] mt-2 sm:mt-3">
-                Enter your friend's public key to send them a friend request
+                Enter your friend's public key or scan the QR/link to send a friend request
             </p>
         </div>
     );
