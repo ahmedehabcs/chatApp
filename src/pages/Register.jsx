@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { signUp } from "../api/auth.js";
-import { FiUser, FiCopy, FiCheck, FiKey, FiLock, FiShield, FiAlertTriangle } from "react-icons/fi";
+import { FiUser, FiKey, FiLock, FiShield } from "react-icons/fi";
 import { ImSpinner8 } from "react-icons/im";
 import { AnimatedBubbles } from "../components/AnimatedBg.jsx";
 import { useNavigate } from "react-router-dom";
+import KeysPopup from "../components/KeysPopup"; // Import the new component
 
 export default function Register() {
 	const [error, setError] = useState(null);
-	const [keys, setKeys] = useState(null);
-	const [showPopup, setShowPopup] = useState(false);
-	const [copiedKey, setCopiedKey] = useState(null);
+	const [keys, setKeys] = useState({ publicKey: "sdsdds-ddfdf-dffddff-dffdfd", privateKey: "fsgrw-ewrerewr-ewrerewr-werwwe"});
+	const [showPopup, setShowPopup] = useState(true);
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
@@ -28,16 +28,13 @@ export default function Register() {
 		}
 	};
 
-	const handleCopy = (keyName, keyValue) => {
-		navigator.clipboard.writeText(keyValue);
-		setCopiedKey(keyName);
-		setTimeout(() => {
-			setCopiedKey(null);
-		}, 3000);
+	const handleClosePopup = () => {
+		setShowPopup(false);
+		navigate("/login");
 	};
 
 	return (
-		<section className="h-screen backdrop-blur-3xl bg-[#000000] flex items-center justify-center p-4 relative overflow-hidden">
+		<section className="min-h-screen backdrop-blur-3xl bg-[#000000] flex items-center justify-center p-4 relative overflow-hidden">
 			<AnimatedBubbles />
 
 			{/* Signup Form */}
@@ -91,95 +88,12 @@ export default function Register() {
 
 			{/* Keys Popup */}
 			{showPopup && keys && (
-				<div className="fixed inset-0 flex items-center justify-center z-50 p-4 animate-fade-in">
-					<div className="bg-[var(--color-surface)] rounded-xl shadow-xl p-6 w-full max-w-md border border-[var(--color-border)] relative">
-						<div className="flex flex-col items-center mb-6">
-							<div className="w-14 h-14 rounded-full bg-[var(--color-main-bg)] flex items-center justify-center text-[var(--color-main)] mb-3">
-								<FiShield size={28} />
-							</div>
-							<h2 className="text-2xl font-bold text-[var(--color-text)] text-center">
-								Your Keys
-							</h2>
-							<p className="text-[var(--color-text-light)] text-sm mt-2 text-center">
-								Save your keys securely – they cannot be recovered later!
-							</p>
-						</div>
-
-						<div className="space-y-6 mb-8">
-							{/* Public Key */}
-							<div className="group">
-								<div className="flex items-center justify-between mb-3">
-									<span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-light)]">
-										Public Key
-									</span>
-									<button 
-										onClick={() => handleCopy("public", keys.publicKey)} 
-										className="text-xs flex items-center gap-1 text-[var(--color-main)] hover:text-[var(--color-main-hover)] transition-colors"
-									>
-										{copiedKey === "public" ? (
-											<>
-												<FiCheck className="text-[var(--color-success)]" size={14} />
-												<span>Copied!</span>
-											</>
-										) : (
-											<>
-												<FiCopy size={14} />
-												<span>Copy</span>
-											</>
-										)}
-									</button>
-								</div>
-								<div onClick={() => handleCopy("public", keys.publicKey)} className="w-full p-4 bg-[var(--color-bg)] rounded-xl text-sm font-mono cursor-pointer transition-all relative overflow-hidden">
-									<div className="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--color-main-bg)]/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-									<input value={keys.publicKey} className="relative break-all pr-6 text-[var(--color-main)] font-medium" />
-								</div>
-							</div>
-
-							{/* Private Key */}
-							<div className="group">
-								<div className="flex items-center justify-between mb-3">
-									<span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-light)]">
-										Private Key
-									</span>
-									<button 
-										onClick={() => handleCopy("private", keys.privateKey)} 
-										className="text-xs flex items-center gap-1 text-[var(--color-main)] hover:text-[var(--color-main-hover)] transition-colors"
-									>
-										{copiedKey === "private" ? (
-											<>
-												<FiCheck className="text-[var(--color-success)]" size={14} />
-												<span>Copied!</span>
-											</>
-										) : (
-											<>
-												<FiCopy size={14} />
-												<span>Copy</span>
-											</>
-										)}
-									</button>
-								</div>
-								<div onClick={() => handleCopy("private", keys.privateKey)} className="w-full p-4 bg-[var(--color-bg)] rounded-xl text-sm font-mono cursor-pointer transition-all relative overflow-hidden">
-									<div className="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--color-main-bg)]/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-									<input value={keys.privateKey} className="relative break-all pr-6 text-[var(--color-main)] font-medium" />
-								</div>
-							</div>
-						</div>
-
-						<div className="bg-[var(--color-warning-bg)] rounded-lg p-3 mb-6">
-							<p className="text-sm font-medium text-[var(--color-warning)] flex items-start gap-3">
-								<FiAlertTriangle size={18} className="mt-0.5 flex-shrink-0" />
-								<span>⚠️ Never share your <b>private key</b>. Keep it offline and secure.</span>
-							</p>
-						</div>
-
-						<button 
-							onClick={() => navigate("/login")} 
-							className="w-full py-3 bg-[var(--color-main)] text-white rounded-lg hover:bg-[var(--color-main-hover)] transition-all font-medium flex items-center justify-center gap-2"
-						>
-							<FiCheck size={18} /> I've saved my keys
-						</button>
-					</div>
-				</div>
+				<KeysPopup 
+					keys={keys}
+					onClose={handleClosePopup}
+					publicKey={keys.publicKey}
+					privateKey={keys.privateKey}
+				/>
 			)}
 		</section>
 	);
