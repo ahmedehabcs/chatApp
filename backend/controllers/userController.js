@@ -7,8 +7,6 @@ export const getCurrentUser = async (req, res, next) => {
         const publicKey = req.user.publicKey;
         const user = await User.findOne({ publicKey });
         if (!user) return handleSendErrors("No user found!", false, 404, next);
-    
-        console.log(publicKey.substring(0, 10), "id:", user._id.toString());
         return res.json({ success: true, user: { publicKey: publicKey, id: user._id.toString()}});
     } catch (error) {
         handleSendErrors(error.message || "Internal server error", false, 500, next);
