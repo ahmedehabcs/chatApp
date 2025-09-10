@@ -88,76 +88,85 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
         }
     }, [handleSendMessage, user]);
 
+    // get messages
     useEffect(() => {
         if (!selectedFriend || !socketRef.current || !privateKey) return;
+        let isMounted = true;
         const socket = socketRef.current;
-
         const joinChatRoom = async () => {
             try {
                 const res = await getMessage(selectedFriend.publicKey);
+                if (!isMounted) return;
                 const decryptedMessages = await Promise.all(
                     res.messages.map(async (msg) => {
                         try {
-                            // pick the right ciphertext
-                            const ciphertext =
-                                msg.sender === user?.publicKey
-                                    ? msg.ciphertexts.sender
-                                    : msg.ciphertexts.recipient;
-
+                            const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
                             const plaintext = await decryptMessage(privateKey, ciphertext);
-                            const isValid = await verifySignature(
-                                msg.sender,
-                                plaintext,
-                                msg.signature
-                            );
-
+                            const isValid = await verifySignature( msg.sender, plaintext, msg.signature);
                             return { ...msg, plaintext, verified: isValid };
                         } catch (err) {
                             return { ...msg, plaintext: "[Decryption failed]", verified: false };
                         }
                     })
                 );
-
                 setMessages(decryptedMessages);
                 setCurrentChatId(res.chat);
                 socket.emit("joinChat", { otherPublicKey: selectedFriend.publicKey });
                 setTimeout(scrollToBottom, 100);
             } catch (err) {
-                setNoteMessage(err.response?.data?.message || "Failed to join chat");
+                if (isMounted) {
+                    setNoteMessage(err.response?.data?.message || "Failed to join chat");
+                }
             }
         };
-
         joinChatRoom();
 
+        // get new messages
         const handleNewMessage = async (msg) => {
             try {
-                const ciphertext =
-                    msg.sender === user?.publicKey
-                        ? msg.ciphertexts.sender
-                        : msg.ciphertexts.recipient;
-
+                const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
                 const decrypted = await decryptMessage(privateKey, ciphertext);
                 const isValid = await verifySignature(msg.sender, decrypted, msg.signature);
 
-                setMessages((prev) => [
-                    ...prev,
-                    { ...msg, plaintext: decrypted, verified: isValid },
-                ]);
-
+                setMessages((prev) => [...prev,{ ...msg, plaintext: decrypted, verified: isValid }]);
                 setTimeout(scrollToBottom, 100);
             } catch (err) {
-                setMessages((prev) => [
-                    ...prev,
-                    { ...msg, plaintext: "[Decryption failed]", verified: false },
-                ]);
+                setMessages((prev) => [ ...prev, { ...msg, plaintext: "[Decryption failed]", verified: false }]);
             }
         };
-
         socket.on("newMessage", handleNewMessage);
         return () => {
+            isMounted = false;
             socket.off("newMessage", handleNewMessage);
         };
-    }, [selectedFriend, socketRef, scrollToBottom, privateKey]);
+    }, [selectedFriend, socketRef, scrollToBottom, privateKey, user?.publicKey]);
+
+    // online status
+    useEffect(() => {
+        if (!socketRef.current || !selectedFriend) return;
+        const socket = socketRef.current;
+
+        const timeoutId = setTimeout(() => {
+            socket.emit("checkOnlineStatus", { publicKey: selectedFriend.publicKey });
+        }, 1000);
+
+        const handleUserOnline = ({ publicKey, online }) => {
+            setSelectedFriend(prev => {
+                if (!prev) return prev;
+                if (prev.publicKey === publicKey) return { ...prev, online };
+                return prev;
+            });
+        };
+
+        socket.on("userOnline", handleUserOnline);
+        socket.on("userOffline", handleUserOnline);
+
+        return () => {
+            clearTimeout(timeoutId);
+            socket.off("userOnline", handleUserOnline);
+            socket.off("userOffline", handleUserOnline);
+        };
+    }, [socketRef, selectedFriend, setSelectedFriend]);
 
 
     if (!selectedFriend) {

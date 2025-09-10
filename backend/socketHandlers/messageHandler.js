@@ -1,7 +1,6 @@
 import Chat from "../models/Chat.js";
 import Message from "../models/Message.js";
 export const handleMessageEvents = (io, socket) => {
-    // Join chat
     socket.on("joinChat", async ({ otherPublicKey }) => {
         const userpk = socket.userPublicKey;
 
@@ -18,40 +17,6 @@ export const handleMessageEvents = (io, socket) => {
         socket.join(chat.chatId);
         socket.emit("joinedChat", { chatId: chat.chatId });
     });
-
-    // Send message
-    // socket.on("sendMessage", async ({ chatId, text }) => {
-    //     try {
-    //         const sender = socket.userPublicKey;
-
-    //         if (!chatId) {
-    //             return socket.emit("error", { message: "Chat ID is required" });
-    //         }
-    //         if (!text || text.trim() === "") {
-    //             return socket.emit("error", { message: "Message cannot be empty" });
-    //         }
-
-    //         const chat = await Chat.findOne({ chatId });
-    //         if (!chat) {
-    //             return socket.emit("error", { message: "Chat does not exist" });
-    //         }
-    //         if (!chat.participants.includes(sender)) {
-    //             return socket.emit("error", { message: "You are not part of this chat" });
-    //         }
-
-    //         const newMessage = new Message({
-    //             chatId,
-    //             sender,
-    //             text: text,
-    //         });
-    //         await newMessage.save();
-
-    //         io.to(chatId).emit("newMessage", newMessage);
-    //     } catch (err) {
-    //         console.error("sendMessage error:", err);
-    //         socket.emit("error", { message: "Failed to send message" });
-    //     }
-    // });
 
     socket.on("sendMessage", async ({ chatId, ciphertexts, signature }) => {
         try {

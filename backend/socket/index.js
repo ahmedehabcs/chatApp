@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import { handleMessageEvents } from "../socketHandlers/messageHandler.js";
-
+import { handleOnlineStatus } from "../socketHandlers/onlineStatus.js";
 let ioInstance = null;
 
 export const initSocket = (server) => {
@@ -10,7 +10,6 @@ export const initSocket = (server) => {
             credentials: true,
         }
     });
-
     ioInstance = io;
 
     // Auth middleware
@@ -23,11 +22,10 @@ export const initSocket = (server) => {
 
     io.on("connection", (socket) => {        
         socket.join(`user_${socket.userPublicKey}`);
-
-        // Register event groups
+        handleOnlineStatus(io, socket);
+        
         handleMessageEvents(io, socket);
     });
-
     return io;
 };
 
