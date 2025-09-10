@@ -1,5 +1,5 @@
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { useState, lazy, Suspense } from "react";
 import Loading from "./components/Loading.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
@@ -9,6 +9,8 @@ const Login = lazy(() => import("./pages/Login.jsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
 
 export default function App() {
+  const [privateKey, setPrivateKey] = useState(null);
+
   return (
     <Router>
       <Suspense fallback={<Loading />}>
@@ -39,7 +41,7 @@ export default function App() {
             path="/dashboard"
             element={
               <ProtectedRoute requiresAuth={true}>
-                <Dashboard />
+                <Dashboard privateKey={privateKey} setPrivateKey={setPrivateKey} />
               </ProtectedRoute>
             }
           />
@@ -47,7 +49,7 @@ export default function App() {
             path="/dashboard/add/:key"
             element={
               <ProtectedRoute requiresAuth={true}>
-                <Dashboard />
+                <Dashboard privateKey={privateKey} setPrivateKey={setPrivateKey} />
               </ProtectedRoute>
             }
           />

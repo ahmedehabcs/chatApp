@@ -47,16 +47,32 @@ export const getMessage = async (req, res, next) => {
     try {
         const userpk = req.user.publicKey;
         const { respk } = req.body;
+
         if (!respk) {
             return handleSendErrors("Receiver public key required", false, 400, next);
         }
-        const chat = await Chat.findOne({participants: { $all: [userpk, respk] }});
+
+        const chat = await Chat.findOne({ participants: { $all: [userpk, respk] } });
         if (!chat) {
             return handleSendErrors("No chat exists between these users", false, 404, next);
         }
-        const messages = await Message.find({ chatId: chat.chatId }).sort({ createdAt: 1 });
-        return res.json({ success: true, chat: chat.chatId, messages });
+
+        const messages = await Message.find({ chatId: chat.chatId })
+            .sort({ createdAt: 1 })
+            .lean();
+
+        // explicitly return ciphertexts + signature + sender
+        const safeMessages = messages.map((msg) => ({
+            _id: msg._id,
+            chatId: msg.chatId,
+            sender: msg.sender,
+            ciphertexts: msg.ciphertexts,  // { sender, recipient }
+            signature: msg.signature,
+            createdAt: msg.createdAt,
+        }));
+
+        return res.json({ success: true, chat: chat.chatId, messages: safeMessages });
     } catch (error) {
         handleSendErrors(error.message || "Internal server error", false, 500, next);
     }
-}
+};
