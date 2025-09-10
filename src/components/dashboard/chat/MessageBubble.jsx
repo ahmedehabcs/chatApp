@@ -6,7 +6,7 @@ export default function MessageBubble({ message, isOwnMessage, time }) {
                 <p>{message.plaintext || "[Decryption failed]"}</p>
                 <span
                     className={`block text-[10px] mt-1 ${ isOwnMessage ? "text-right text-[var(--color-text-inverse)]" : "text-left text-[var(--color-text-light)]"}`}>
-                    {time} {message.verified ? "✔" : "✖"}
+                    {time}
                 </span>
             </div>
         </div>

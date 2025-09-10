@@ -1,11 +1,10 @@
 import { useState, lazy } from 'react';
-import { FiMessageSquare, FiUserPlus, FiUser } from 'react-icons/fi';
-import { LuFileKey2 } from "react-icons/lu";
+import { FiMessageSquare, FiUserPlus } from 'react-icons/fi';
 import { AnimatedBubbles, AnimatedTriangles } from '../components/AnimatedBg.jsx';
 import FriendList from '../components/dashboard/FriendList';
 import ChatWindow from '../components/dashboard/ChatWindow';
 import FriendRequests from '../components/dashboard/FriendRequests';
-import ProfilePopup from "../components/ProfilePopup.jsx";
+import SettingsButton from '../components/dashboard/SettingsButton.jsx';
 import FriendRequestButton from "../components/dashboard/FriendRequestButton.jsx";
 const AddFriend = lazy(() => import("../components/dashboard/AddFriend.jsx"));
 const PrivateKeyPopup = lazy(() => import("../components/dashboard/privateKeyPopup.jsx"));
@@ -15,7 +14,6 @@ export default function Dashboard({ privateKey, setPrivateKey }) {
     const [activeView, setActiveView] = useState('chats');
     const [showChat, setShowChat] = useState(false);
     const [privateKeyPop, setShowPrivateKeyPop] = useState(false);
-    const [showProfile, setShowProfile] = useState(false);
     const [totalFriend, setTotalFriend] = useState({ friends: 0, requests: 0 });
 
     return (
@@ -33,17 +31,7 @@ export default function Dashboard({ privateKey, setPrivateKey }) {
                                 End-to-end encrypted messaging
                             </p>
                         </div>
-
-                        {/* Profile Icon */}
-                        <div className="relative">
-                            <button onClick={() => setShowPrivateKeyPop(!privateKeyPop)} className="p-2 rounded-full hover:text-[var(--color-main-light)] duration-150" title="enter your private key" >
-                                <LuFileKey2 size={24} />
-                            </button>
-                            <button onClick={() => setShowProfile(!showProfile)} className="p-2 rounded-full hover:text-[var(--color-main-light)] duration-150" title="My Profile" >
-                                <FiUser size={24} />
-                            </button>
-                            <ProfilePopup showProfile={showProfile} setShowProfile={setShowProfile} />
-                        </div>
+                        <SettingsButton privateKey={privateKey} privateKeyPop={privateKeyPop} setShowPrivateKeyPop={setShowPrivateKeyPop} />
                     </div>
                 </header>
                 <div className="flex-1 flex overflow-hidden">

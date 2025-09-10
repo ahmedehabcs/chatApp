@@ -40,12 +40,6 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
         setSelectedFriend(null);
         if (window.history.state?.chatOpen) window.history.back();
     }, [setShowChat, setSelectedFriend]);
-    const handleKeyDown = useCallback((e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
-        }
-    }, [currentChatId, privateKey]);
     const scrollToBottom = useCallback(() => {
         const container = messagesEndRef.current?.parentNode;
         if (container) container.scrollTo({ top: 0, behavior: "smooth" });
@@ -67,16 +61,9 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
         }
 
         try {
-            // Encrypt for me (so I can read my own later)
-            const ciphertextForMe = await encryptMessage(user?.publicKey, text);
-
-            // Encrypt for friend
+            const ciphertextForMe = await encryptMessage(user.publicKey, text);
             const ciphertextForFriend = await encryptMessage(selectedFriend.publicKey, text);
-
-            // Sign the plaintext (not ciphertext)
             const signature = await signMessage(privateKey, text);
-
-            // Send both ciphertexts
             socketRef.current.emit("sendMessage", {
                 chatId: currentChatId,
                 ciphertexts: {
@@ -86,13 +73,20 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
                 signature,
                 sender: user?.publicKey,
             });
-
             textareaRef.current.value = "";
         } catch (err) {
             console.error(err);
             setNoteMessage("Failed to send message securely");
         }
     }, [currentChatId, socketRef, selectedFriend, privateKey, user]);
+
+    const handleKeyDown = useCallback((e) => {
+        if (!user) return;
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    }, [handleSendMessage, user]);
 
     useEffect(() => {
         if (!selectedFriend || !socketRef.current || !privateKey) return;
