@@ -115,7 +115,7 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
                 setTimeout(scrollToBottom, 100);
             } catch (err) {
                 if (isMounted) {
-                    setNoteMessage(err.response?.data?.message || "Failed to join chat");
+                    setNoteMessage(err.response?.data?.message || "Failed to join cha");
                 }
             }
         };
