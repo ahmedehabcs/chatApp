@@ -88,23 +88,23 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
         }
     }, [handleSendMessage, user]);
 
-    // get messages
+
+    const initialLoad = useRef(true);
     useEffect(() => {
-        if (!selectedFriend || !socketRef.current || !privateKey) return;
-        let isMounted = true;
+        if (!selectedFriend || !socketRef.current || !showChat) return;
         const socket = socketRef.current;
+        initialLoad.current = true;
         const joinChatRoom = async () => {
             try {
                 const res = await getMessage(selectedFriend.publicKey);
-                if (!isMounted) return;
                 const decryptedMessages = await Promise.all(
                     res.messages.map(async (msg) => {
                         try {
                             const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
                             const plaintext = await decryptMessage(privateKey, ciphertext);
-                            const isValid = await verifySignature( msg.sender, plaintext, msg.signature);
+                            const isValid = await verifySignature(msg.sender, plaintext, msg.signature);
                             return { ...msg, plaintext, verified: isValid };
-                        } catch (err) {
+                        } catch {
                             return { ...msg, plaintext: "[Decryption failed]", verified: false };
                         }
                     })
@@ -112,34 +112,29 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
                 setMessages(decryptedMessages);
                 setCurrentChatId(res.chat);
                 socket.emit("joinChat", { otherPublicKey: selectedFriend.publicKey });
-                setTimeout(scrollToBottom, 100);
+                initialLoad.current = false;
             } catch (err) {
-                if (isMounted) {
-                    setNoteMessage(err.response?.data?.message || "Failed to join cha");
-                }
+                setNoteMessage(err.response?.data?.message || "Failed to join chat");
             }
         };
         joinChatRoom();
-
-        // get new messages
         const handleNewMessage = async (msg) => {
             try {
                 const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
                 const decrypted = await decryptMessage(privateKey, ciphertext);
                 const isValid = await verifySignature(msg.sender, decrypted, msg.signature);
-
-                setMessages((prev) => [...prev,{ ...msg, plaintext: decrypted, verified: isValid }]);
-                setTimeout(scrollToBottom, 100);
-            } catch (err) {
-                setMessages((prev) => [ ...prev, { ...msg, plaintext: "[Decryption failed]", verified: false }]);
+                setMessages((prev) => {
+                    const updated = [...prev, { ...msg, plaintext: decrypted, verified: isValid }];
+                    if (!initialLoad.current) setTimeout(scrollToBottom, 100);
+                    return updated;
+                });
+            } catch {
+                setMessages((prev) => [...prev, { ...msg, plaintext: "[Decryption failed]", verified: false }]);
             }
         };
         socket.on("newMessage", handleNewMessage);
-        return () => {
-            isMounted = false;
-            socket.off("newMessage", handleNewMessage);
-        };
-    }, [selectedFriend, socketRef, scrollToBottom, privateKey, user?.publicKey]);
+        return () => { socket.off("newMessage", handleNewMessage) };
+    }, [selectedFriend, socketRef, showChat]);
 
     // online status
     useEffect(() => {

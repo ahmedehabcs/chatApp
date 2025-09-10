@@ -13,7 +13,7 @@ export default function Dashboard({ privateKey, setPrivateKey }) {
     const [selectedFriend, setSelectedFriend] = useState(null);
     const [activeView, setActiveView] = useState('chats');
     const [showChat, setShowChat] = useState(false);
-    const [privateKeyPop, setShowPrivateKeyPop] = useState(false);
+    const [privateKeyPop, setShowPrivateKeyPop] = useState(true);
     const [totalFriend, setTotalFriend] = useState({ friends: 0, requests: 0 });
 
     return (
