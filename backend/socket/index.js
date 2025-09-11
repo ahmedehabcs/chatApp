@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import { handleMessageEvents } from "../socketHandlers/messageHandler.js";
 import { handleOnlineStatus } from "../socketHandlers/onlineStatus.js";
+import { handleFriendEvents } from "../socketHandlers/friendHandler.js";
 let ioInstance = null;
 
 export const initSocket = (server) => {
@@ -23,8 +24,8 @@ export const initSocket = (server) => {
     io.on("connection", (socket) => {        
         socket.join(`user_${socket.userPublicKey}`);
         handleOnlineStatus(io, socket);
-        
         handleMessageEvents(io, socket);
+        handleFriendEvents(io, socket);
     });
     return io;
 };

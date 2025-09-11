@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FiX, FiEdit2, FiCheck, FiUser, FiAlertCircle } from "react-icons/fi";
 import { nicknameApi } from "../api/friends.js";
 
-export default function NicknamePopup({ friend, setNoteMessage, setSuccess, setClosePopUp, friendList }) {
+export default function NicknamePopup({ friend, setNoteMessage, setSuccess, setClosePopUp }) {
     const [value, setValue] = useState(friend?.nickname || "");
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +49,6 @@ export default function NicknamePopup({ friend, setNoteMessage, setSuccess, setC
             const res = await nicknameApi(friend.publicKey, pop);
             setNoteMessage(res.message);
             setSuccess(true);
-            friendList();
             setClosePopUp();
         } catch (error) {
             console.log(error);

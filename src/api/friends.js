@@ -6,12 +6,6 @@ export async function outgoingRequest({ receiverPublicKey, receiverId }) {
     return res.data;
 }
 
-// get request
-export async function incomingRequests(){
-    const res = await API.get("/friends/receive");
-    return res.data;
-}
-
 // accept request
 export async function approveRequest(userApprovedPublicKey){
     const res = await API.post("/friends/approve", { userApprovedPublicKey });
@@ -21,12 +15,6 @@ export async function approveRequest(userApprovedPublicKey){
 // reject request
 export async function rejectRequest(userRejectedPublicKey){
     const res = await API.post("/friends/reject", { userRejectedPublicKey });
-    return res.data;
-}
-
-// list friends
-export async function listFriends(){
-    const res = await API.get("/friends/list");
     return res.data;
 }
 
@@ -41,4 +29,3 @@ export async function nicknameApi(friendPublicKey, nickname){
     const res = await API.post("/friends/nickname", { friendPublicKey, nickname });
     return res.data;
 }
-

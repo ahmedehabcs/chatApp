@@ -1,50 +1,46 @@
 import { useState, useEffect } from 'react';
-import { listFriends, removeFriend } from "../../api/friends.js";
+import { removeFriend } from "../../api/friends.js";
 import { MdOutlineDriveFileRenameOutline } from "react-icons/md";
 import { FiTrash2 } from 'react-icons/fi';
 import NoteMessageStruct from '../NoteMessageStruct.jsx';
 import NicknamePopup from "../NicknamePopup.jsx";
 import truncatePublicKey from "../../utils/truncatePublicKey.js";
+import useAuth from "../../hooks/useAuth.jsx";
+import useSocket from "../../hooks/useSocket.jsx";
 
 export default function FriendList({ setTotalFriend, selectedFriend, setSelectedFriend, showChat, setShowChat }) {
     const [friends, setFriends] = useState([]);
     const [noteMessage, setNoteMessage] = useState("");
     const [success, setSuccess] = useState(null);
     const [popupFriend, setPopupFriend] = useState(null);
-
-    // list friends
-    const friendList = async () => {
-        try {
-            const res = await listFriends();
-            setFriends(res.friends);
-            setTotalFriend(prev => ({ ...prev, friends: res.friends.length }));
-        } catch (error) {
-            setNoteMessage(error.response?.data?.message || `Failed to list your friend`);
-            setSuccess(false);
-        }
-    }
+    const { user } = useAuth();
+    const socketRef = useSocket(user?.publicKey);
 
     useEffect(() => {
-        friendList();
-        const isLargeScreen = window.innerWidth >= 1024;
-        if (showChat && !isLargeScreen) return;
-        const interval = setInterval(() => {
-            friendList();
-        }, 6000);
-        return () => clearInterval(interval);
-    }, []);
+        const socket = socketRef.current;
+        if (!socket) return;
+        const fetchFriends = () => socket.emit("friend:list");
+        fetchFriends();
+        socket.on("friend:update", fetchFriends);
+        socket.on("friend:list:response", (friendsList) => {
+            setFriends(friendsList);
+            setTotalFriend(prev => ({ ...prev, friends: friendsList.length }));
+        });
+        return () => {
+            socket.off("friend:update", fetchFriends);
+            socket.off("friend:list:response");
+        };
+    }, [socketRef, user?.publicKey]);
 
     // remove friend
     const handleRemoveFriend = async (e, pk) => {
         e.stopPropagation();
         e.preventDefault();
-        const confirmed = window.confirm("Are you sure you want to remove this friend?");
-        if (!confirmed) return;
+        if (!window.confirm("Are you sure you want to remove this friend?")) return;
         try {
             const res = await removeFriend(pk);
             setSelectedFriend(null);
             setShowChat(false);
-            friendList();
             setSuccess(res.success);
             setNoteMessage(res.message);
         } catch (error) {
@@ -66,7 +62,7 @@ export default function FriendList({ setTotalFriend, selectedFriend, setSelected
                     <NoteMessageStruct message={noteMessage} success={success} onClear={() => { setNoteMessage(""); setSuccess(null); }} />
                     <div className="divide-y divide-[var(--color-border)]">
                         {friends.map((friend, index) => (
-                            <div key={friend.publicKey} className={`p-4 flex items-center justify-between cursor-pointer hover:bg-[#000000b4] transition-all duration-200 ${selectedFriend === friend.publicKey ? 'bg-[var(--color-main-bg)]' : ''}`} onClick={() => handleSelectFriend(friend)}>
+                            <div key={friend.publicKey} className={`p-4 flex items-center justify-between cursor-pointer hover:bg-[#000000b4] transition-all duration-200 ${selectedFriend?.publicKey === friend.publicKey ? 'bg-[var(--color-main-bg)]' : ''}`} onClick={() => handleSelectFriend(friend)}>
                                 <div className="flex items-center">
                                     <p className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[var(--color-main)] flex items-center justify-center text-[var(--color-text-inverse)] font-semibold text-sm md:text-base">{index + 1}</p>
                                     <div className="ml-3">
@@ -96,7 +92,7 @@ export default function FriendList({ setTotalFriend, selectedFriend, setSelected
                     </div>
                 </div>
             </div>
-            {popupFriend && (<NicknamePopup friend={popupFriend} setNoteMessage={setNoteMessage} setSuccess={setSuccess} setClosePopUp={() => setPopupFriend(null)} friendList={friendList} />)}
+            {popupFriend && (<NicknamePopup friend={popupFriend} setNoteMessage={setNoteMessage} setSuccess={setSuccess} setClosePopUp={() => setPopupFriend(null)} />)}
         </div>
     );
 }

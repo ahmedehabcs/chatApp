@@ -3,6 +3,7 @@ import Chat from "../models/Chat.js";
 import handleSendErrors from "../utils/handleSendErrors.js";
 import Message from "../models/Message.js";
 import mongoose from "mongoose";
+import { getIO } from "../socket/index.js";
 
 // POST /api/friends/request
 export const outgoingRequest = async (req, res, next) => {
@@ -66,27 +67,18 @@ export const outgoingRequest = async (req, res, next) => {
         sender.outgoingRequests.push({ publicKey: finalReceiverPublicKey });
         receiver.incomingRequests.push({ publicKey: senderPublicKey });
 
-        await Promise.all([sender.save(), receiver.save()]);
+        await sender.save();
+        await receiver.save();
+
+        const io = getIO();
+        io.to(`user_${senderPublicKey}`).emit("request:update");
+        io.to(`user_${finalReceiverPublicKey}`).emit("request:update");
 
         return res.status(200).json({ success: true, message: "Friend request sent successfully." });
     } catch (error) {
         handleSendErrors(error.message || "Internal server error", false, 500, next);
     }
 };
-
-// GET /api/friends/receive
-export const incomingRequests = async (req, res, next) => {
-    try {
-        const userPublicKey = req.user.publicKey;
-        const user = await User.findOne({ publicKey: userPublicKey });
-        if (!user) {
-            return handleSendErrors("User not found", false, 404, next);
-        }
-        res.json({ success: true, incomingRequests: user.incomingRequests });
-    } catch (error) {
-        handleSendErrors(error || "Internal server error", false, 500, next);
-    }
-}
 
 // POST /api/friends/approve
 export const approveRequest = async (req, res, next) => {
@@ -132,6 +124,13 @@ export const approveRequest = async (req, res, next) => {
             await chat.save();
         }
 
+        const io = getIO();
+        io.to(`user_${userPublicKey}`).emit("friend:update");
+        io.to(`user_${userApprovedPublicKey}`).emit("friend:update");
+
+        io.to(`user_${userPublicKey}`).emit("request:update");
+        io.to(`user_${userApprovedPublicKey}`).emit("request:update");
+
         return res.json({ message: "Friend request approved", success: true });
     } catch (error) {
         handleSendErrors(error.message || "Internal server error", false, 500, next);
@@ -167,23 +166,11 @@ export const rejectRequest = async (req, res, next) => {
         await user.save();
         await rejectedUser.save();
 
+        const io = getIO();
+        io.to(`user_${userPublicKey}`).emit("request:update");
+        io.to(`user_${userRejectedPublicKey}`).emit("request:update");
+
         return res.json({ message: "Friend request rejected", success: true });
-
-    } catch (error) {
-        handleSendErrors(error.message || "Internal server error", false, 500, next);
-    }
-}
-
-// GET /api/friends/list
-export const listFriends = async (req, res, next) => {
-    try {
-        const userPublicKey = req.user.publicKey;
-        const user = await User.findOne({ publicKey: userPublicKey });
-        if (!user) return handleSendErrors("User not found", false, 400, next);
-        res.json({ success: true, friends: user.friends.map(fr => ({
-            publicKey: fr.publicKey,
-            nickname: fr.nickname
-        })) });
     } catch (error) {
         handleSendErrors(error.message || "Internal server error", false, 500, next);
     }
@@ -220,6 +207,10 @@ export const removeFriend = async (req, res, next) => {
             await Message.deleteMany({ chatId: chat.chatId });
             await Chat.deleteOne({ chatId: chat.chatId });
         }
+
+        const io = getIO();
+        io.to(`user_${userPublicKey}`).emit("friend:update");
+        io.to(`user_${friendPublicKey}`).emit("friend:update");
 
         return res.json({ message: "Friend removed successfully", success: true });
     } catch (error) {
@@ -261,7 +252,10 @@ export const nickname = async (req, res, next) => {
         friend.nickname = nickname;
         await user.save();
 
-        return res.json({ success: true, message: `Nickname for ${friend.publicKey} has been set to "${friend.nickname}"`, friend: { publicKey: friend.publicKey, nickname: friend.nickname }
+        const io = getIO();
+        io.to(`user_${userPublicKey}`).emit("friend:update");
+
+        return res.json({ success: true, message: `Nickname for ... ${friend.publicKey.substring(30, 40)} ... has been set to "${friend.nickname}"`, friend: { publicKey: friend.publicKey, nickname: friend.nickname }
         });
     } catch (error) {
         handleSendErrors(error.message || "Internal server error", false, 500, next);
