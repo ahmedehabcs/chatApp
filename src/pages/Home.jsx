@@ -5,7 +5,7 @@ import { AnimatedBubbles, AnimatedTriangles } from "../components/AnimatedBg.jsx
 export default function LandingPage() {
 	const navigate = useNavigate();
 	return (
-		<div className="min-h-screen backdrop-blur-3xl bg-[#000000] text-[var(--color-text)]">
+		<div className="min-h-screen grass-dark text-[var(--color-text)]">
 			<AnimatedTriangles />
 			<AnimatedBubbles />
 

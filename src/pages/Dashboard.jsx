@@ -17,7 +17,7 @@ export default function Dashboard({ privateKey, setPrivateKey }) {
     const [totalFriend, setTotalFriend] = useState({ friends: 0, requests: 0 });
 
     return (
-        <section className="min-h-[100dvh] backdrop-blur-3xl bg-[#000000] text-[var(--color-text)] relative overflow-hidden">
+        <section className="min-h-[100dvh] grass-dark text-[var(--color-text)] relative overflow-hidden">
             <AnimatedBubbles />
             <AnimatedTriangles />
             <div className="relative z-10 h-[100dvh] flex flex-col">

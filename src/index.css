@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@layer utilities {
+	.grass-dark {
+		@apply backdrop-blur-3xl bg-black;
+	}
+}
+
 :root {
 	--color-main: #ff4d6d;
 	--color-main-hover: #ff6f91c4;

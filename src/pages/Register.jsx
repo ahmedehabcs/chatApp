@@ -28,7 +28,7 @@ export default function Register() {
 	};
 
 	return (
-		<section className="min-h-screen backdrop-blur-3xl bg-[#000000] flex items-center justify-center p-4 relative overflow-hidden">
+		<section className="min-h-screen grass-dark flex items-center justify-center p-4 relative overflow-hidden">
 			<AnimatedBubbles />
 			{!showPopup && !keys && (
 				<div className="w-full max-w-lg relative z-10">

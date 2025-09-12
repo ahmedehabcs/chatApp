@@ -53,7 +53,7 @@ export default function Login() {
 	};
 
 	return (
-		<section className="min-h-screen backdrop-blur-3xl bg-[#000000] flex items-center justify-center p-4 relative overflow-hidden">
+		<section className="min-h-screen grass-dark flex items-center justify-center p-4 relative overflow-hidden">
 			<AnimatedBubbles />
 			<div className="bg-[var(--color-surface)] rounded-2xl shadow-xl p-8 w-full max-w-md border border-[var(--color-border)] relative z-10 backdrop-blur-sm bg-opacity-90">
 				<div className="flex flex-col items-center mb-8">
