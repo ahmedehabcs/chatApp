@@ -1,20 +1,19 @@
 import { useState } from "react";
 import { signUp } from "../api/auth.js";
-import { FiUser, FiKey, FiLock, FiShield } from "react-icons/fi";
+import { FiUser, FiKey, FiShield } from "react-icons/fi";
 import { ImSpinner8 } from "react-icons/im";
 import { AnimatedBubbles } from "../components/AnimatedBg.jsx";
-import { useNavigate } from "react-router-dom";
-import KeysPopup from "../components/register/KeysPopup";
+import KeysDashboard from "../components/register/KeysDashboard.jsx";
 
 export default function Register() {
 	const [error, setError] = useState(null);
 	const [keys, setKeys] = useState(null);
 	const [showPopup, setShowPopup] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
-	const navigate = useNavigate();
 
 	const handleSignUp = async (e) => {
 		e.preventDefault();
+		setError(null);
 		setIsLoading(true);
 		try {
 			const response = await signUp();
@@ -28,83 +27,61 @@ export default function Register() {
 		}
 	};
 
-	const handleClosePopup = () => {
-		setShowPopup(false);
-		navigate("/login");
-	};
-
 	return (
-		<section className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center p-4 relative overflow-hidden">
+		<section className="min-h-screen backdrop-blur-3xl bg-[#000000] flex items-center justify-center p-4 relative overflow-hidden">
 			<AnimatedBubbles />
-
-			{/* Signup Form */}
-			<div className={`bg-[var(--color-surface)] ${!showPopup ? "block" : "hidden"} rounded-2xl p-8 w-full max-w-md border border-[var(--color-border)] transition-all duration-500 relative z-10 shadow-2xl`}>
-				<div className="flex flex-col items-center mb-8">
-					<div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--color-main)] to-[var(--color-main-light)] flex items-center justify-center text-white mb-6">
-						<FiUser size={40} />
-					</div>
-					<h1 className="text-3xl font-bold text-[var(--color-text)] mb-3 text-center">
-						Secure Account Registration
-					</h1>
-					<p className="text-[var(--color-text-light)] text-center max-w-md">
-						Join our platform with military-grade encryption to protect your data
-					</p>
-				</div>
-
-				<button
-					onClick={(e) => handleSignUp(e)}
-					disabled={isLoading}
-					className={`w-full py-4 rounded-xl bg-gradient-to-r from-[var(--color-main)] to-[var(--color-main-light)] text-white font-semibold transition-all duration-300 flex items-center justify-center gap-3 text-lg group overflow-hidden relative`}
-				>
-					{isLoading ? (
-						<>
-							<ImSpinner8 className="animate-spin" size={20} />
-							Generating Secure Keys...
-						</>
-					) : (
-						<>
-							<div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
-							<FiKey size={20} />
-							Create Secure Account
-						</>
-					)}
-				</button>
-
-				{error && (
-					<div className="mt-6 p-4 bg-[var(--color-error-bg)] rounded-xl border border-[var(--color-error)]/30 flex items-start gap-3">
-						<div className="text-[var(--color-error)] mt-0.5">
-							<FiLock size={20} />
-						</div>
-						<div>
-							<p className="text-[var(--color-error)] font-medium">
-								Registration Error
-							</p>
-							<p className="text-[var(--color-error)]/80 text-sm mt-1">
-								{error}
+			{!showPopup && !keys && (
+				<div className="w-full max-w-lg relative z-10">
+					<div className={`bg-[var(--color-surface)] rounded-2xl p-6 md:p-8 border border-[var(--color-border)] shadow-2xl transition-all duration-500 ${showPopup ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"}`}>
+						<div className="text-center mb-8">
+							<div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-[var(--color-main)] to-[var(--color-main-heavy)] mb-4 text-white">
+								<FiUser className="w-8 h-8 md:w-10 md:h-10" />
+							</div>
+							<h1 className="text-2xl md:text-3xl font-bold text-[var(--color-text)] mb-2">
+								Join Us Securely
+							</h1>
+							<p className="text-[var(--color-text-light)] text-sm md:text-base max-w-md mx-auto">
+								Your data is protected with advanced encryption
 							</p>
 						</div>
-					</div>
-				)}
-
-				<div className="mt-8 pt-6 border-t border-[var(--color-border)] flex items-center justify-between">
-					<div className="flex items-center text-[var(--color-text-light)]">
-						<FiShield className="mr-2 text-[var(--color-main)]" />
-						<span className="text-sm">End-to-End Encryption</span>
-					</div>
-					<div className="text-sm text-[var(--color-text-light)]">
-						<span className="font-medium">AhmedEhab Security</span>
+						{error && (
+							<div className="mb-6 p-4 bg-[var(--color-error-bg)] rounded-xl border border-[var(--color-error)]/30 flex items-start gap-3 animate-fadeIn">
+								<div>
+									<p className="text-[var(--color-error)]/80 text-xs md:text-sm mt-1 break-words whitespace-pre-wrap">
+										{error}
+									</p>
+								</div>
+							</div>
+						)}
+						<button onClick={handleSignUp} disabled={isLoading} className="w-full py-3 md:py-4 rounded-xl bg-gradient-to-r from-[var(--color-main)] to-[var(--color-main-heavy)] text-white font-semibold transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg hover:from-[var(--color-main-hover)] hover:to-[var(--color-main-heavy)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed group relative overflow-hidden">
+							{isLoading ? (
+								<>
+									<ImSpinner8 className="animate-spin w-5 h-5 md:w-6 md:h-6" />
+									<span>Creating account...</span>
+								</>
+							) : (
+								<>
+									<div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+									<FiKey className="w-5 h-5 md:w-6 md:h-6" />
+									<span>Create Account</span>
+								</>
+							)}
+						</button>
+						<div className="mt-8 pt-6 border-t border-[var(--color-border)] flex flex-row items-center justify-between gap-4 text-center sm:text-left">
+							<div className="flex items-center justify-center sm:justify-start text-[var(--color-text-light)] text-sm">
+								<FiShield className="mr-2 text-[var(--color-main)] w-4 h-4" />
+								<span>Powered by</span>
+							</div>
+							<div className="text-[var(--color-text-light)] text-sm">
+								<span className="font-medium">AhmedEhab</span>
+							</div>
+						</div>
 					</div>
 				</div>
-			</div>
-
+			)}
 			{/* Keys Popup */}
 			{showPopup && keys && (
-				<KeysPopup
-					keys={keys}
-					onClose={handleClosePopup}
-					publicKey={keys.publicKey}
-					privateKey={keys.privateKey}
-				/>
+				<KeysDashboard keys={keys} setShowPopup={setShowPopup} publicKey={keys.publicKey} privateKey={keys.privateKey} />
 			)}
 		</section>
 	);
