@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { FiShield, FiKey, FiLock, FiDownload, FiCheck } from "react-icons/fi";
 import { createVerificationHash } from "../../utils/createVerificationHash.js";
 import { useNavigate } from "react-router-dom";
-import { downloadKeys } from "../../api/auth.js";
+import { createSignature } from "../../api/auth.js";
 import KeyCard from "./KeyCard";
 import ActionCard from "./ActionCard";
 
@@ -37,7 +37,7 @@ export default function KeysDashboard({ publicKey, privateKey, setShowPopup }) {
             setLoading(true);
             const { createKeysPdf } = await import("../../utils/createKeysPdf.js");
             const verHash = await createVerificationHash(publicKey, privateKey);
-            const res = await downloadKeys(verHash);
+            const res = await createSignature(verHash);
             const pdfBlob = await createKeysPdf(publicKey, privateKey, res.signature);
             const url = URL.createObjectURL(pdfBlob);
             const link = document.createElement("a");

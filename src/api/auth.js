@@ -5,8 +5,13 @@ export const signUp = async () => {
 	return res.data;
 };
 
-export const downloadKeys = async (verHash) => {
-	const res = await API.post("/auth/download", { verHash });
+export const createSignature = async (verHash) => {
+	const res = await API.post("/auth/signature", { verHash });
+	return res.data;
+}
+
+export const verifySignature = async (verHash, signature) => {
+	const res = await API.post("/auth/verifySignature", { verHash, signature });
 	return res.data;
 }
 

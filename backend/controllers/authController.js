@@ -16,12 +16,25 @@ export const signup = async (req, res, next) => {
     }
 };
 
-export const downloadKeys = async (req, res, next) => {
+export const createSignature = async (req, res, next) => {
     try {
         const { verHash } = req.body;
         if (!verHash) return handleSendErrors("Hash is required", false, 400, next);
         const signature = createServerSignature(verHash);
         return res.json({ success: true, signature });
+    } catch (error) {
+        console.log(error);
+        handleSendErrors(error.message || "Internal server error", false, 500, next);
+    }
+};
+
+export const verifySignature = async (req, res, next) => {
+    try {
+        const { verHash, signature } = req.body;
+        if (!verHash || !signature) return handleSendErrors("Hash and signature are required", false, 400, next);
+        const expected = createServerSignature(verHash);
+        const isValid = expected === signature;
+        return res.json({ success: true, valid: isValid, expected });
     } catch (error) {
         console.log(error);
         handleSendErrors(error.message || "Internal server error", false, 500, next);

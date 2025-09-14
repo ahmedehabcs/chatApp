@@ -7,6 +7,7 @@ const Home = lazy(() => import("./pages/Home.jsx"));
 const Register = lazy(() => import("./pages/Register.jsx"));
 const Login = lazy(() => import("./pages/Login.jsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
+const Verify = lazy(() => import("./pages/Verify.jsx"));
 
 export default function App() {
   const [privateKey, setPrivateKey] = useState(null);
@@ -53,6 +54,8 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route path="/verify" element={<Verify />} />
           
           <Route path="*" element={<Home />} />
         </Routes>
