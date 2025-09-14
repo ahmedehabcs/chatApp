@@ -4,7 +4,7 @@ import { createChallenge, verifyChallenge } from "../api/auth";
 import { FiLogIn, FiKey, FiAlertCircle } from "react-icons/fi";
 import { ImSpinner8 } from "react-icons/im";
 import { AnimatedBubbles } from "../components/AnimatedBg.jsx";
-import { signChallenge } from "../utils/crypto";
+import { signChallenge } from "../utils/signChallenge.js";
 import { formatPublicKey } from "../utils/formatKeys.js";
 
 export default function Login() {
@@ -39,12 +39,11 @@ export default function Login() {
 			const { challenge } = await createChallenge(publicKey);
 			const signature = await signChallenge(privateKey, challenge);
 			await verifyChallenge(publicKey, signature);
-
 			window.localStorage.setItem("publicKey", publicKey);
 			setHasPubKey(true);
 			window.location.reload();
 		} catch (err) {
-			setError(err?.response?.data?.message || err.message || "Login failed. Please try again.");
+			setError("Login failed. Please try again.");
 			setHasPubKey(false);
 			localStorage.removeItem("publicKey");
 		} finally {

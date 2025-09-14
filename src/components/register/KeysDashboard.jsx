@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { FiShield, FiKey, FiLock, FiDownload, FiCheck } from "react-icons/fi";
+import { createVerificationHash } from "../../utils/createVerificationHash.js";
 import { useNavigate } from "react-router-dom";
 import { downloadKeys } from "../../api/auth.js";
 import KeyCard from "./KeyCard";
@@ -8,6 +9,7 @@ import ActionCard from "./ActionCard";
 export default function KeysDashboard({ publicKey, privateKey, setShowPopup }) {
     const [copiedPublic, setCopiedPublic] = useState(false);
     const [copiedPrivate, setCopiedPrivate] = useState(false);
+    const [loading, setLoading] = useState(false);
     const timeoutRef = useRef(null);
     const navigate = useNavigate();
 
@@ -32,20 +34,23 @@ export default function KeysDashboard({ publicKey, privateKey, setShowPopup }) {
 
     const handleDownloadKeys = async () => {
         try {
-            const res = await downloadKeys(publicKey, privateKey);
-            console.log(res);
-            const url = window.URL.createObjectURL(new Blob([res]));
+            setLoading(true);
+            const { createKeysPdf } = await import("../../utils/createKeysPdf.js");
+            const verHash = await createVerificationHash(publicKey, privateKey);
+            const res = await downloadKeys(verHash);
+            const pdfBlob = await createKeysPdf(publicKey, privateKey, res.signature);
+            const url = URL.createObjectURL(pdfBlob);
             const link = document.createElement("a");
             link.href = url;
-            link.setAttribute("download", "keys.pdf");
-            document.body.appendChild(link);
+            link.download = "keys.pdf";
             link.click();
-            link.remove();
-            console.log(res);
+            URL.revokeObjectURL(url);
         } catch (error) {
-            console.log(error);
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
     return (
         <main className="py-8">
@@ -91,7 +96,7 @@ export default function KeysDashboard({ publicKey, privateKey, setShowPopup }) {
                     <ActionCard
                         title="Download Backup"
                         description="Save both keys in a secure file for offline storage."
-                        buttonText="Download File"
+                        buttonText={`${loading ? "Generating..." : "Download File"}`}
                         buttonIcon={<FiDownload size={18} />}
                         onClick={handleDownloadKeys}
                         bgClasses="bg-gradient-to-r from-[var(--color-main)]/20 to-[var(--color-secondary)]/20"

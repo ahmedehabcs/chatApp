@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { getMessage } from "../../api/messages.js";
 import { EmptyChatState, NoMessagesState } from './chat/EmptyState.jsx';
-import { encryptMessage, decryptMessage, signMessage, verifySignature } from "../../utils/cryptoHelpers.js";
+import { encryptMessage, decryptMessage, signMessage, verifySignature } from "../../utils/messageFlow.js";
 import { validatePrivateKey } from '../../utils/validatePrivateKey.js';
 import useAuth from "../../hooks/useAuth.jsx";
 import useSocket from '../../hooks/useSocket.jsx';

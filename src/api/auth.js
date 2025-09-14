@@ -5,8 +5,8 @@ export const signUp = async () => {
 	return res.data;
 };
 
-export const downloadKeys = async (publicKey, privateKey) => {
-	const res = await API.post("/auth/download", { publicKey, privateKey }, { responseType: "blob" });
+export const downloadKeys = async (verHash) => {
+	const res = await API.post("/auth/download", { verHash });
 	return res.data;
 }
 

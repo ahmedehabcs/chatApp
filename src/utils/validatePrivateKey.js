@@ -1,4 +1,4 @@
-import { signMessage, verifySignature } from "./cryptoHelpers.js";
+import { signMessage, verifySignature } from "./messageFlow.js";
 
 export async function validatePrivateKey(publicKey, privateKeyPem) {
     try {
