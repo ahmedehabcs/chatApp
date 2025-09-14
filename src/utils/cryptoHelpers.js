@@ -1,4 +1,4 @@
-import { formatPublicKey, formatPrivateKey } from "./formatPublicKey.js";
+import { formatPublicKey, formatPrivateKey } from "./formatKeys.js";
 
 function pemToArrayBuffer(pem, label) {
     const base64 = pem

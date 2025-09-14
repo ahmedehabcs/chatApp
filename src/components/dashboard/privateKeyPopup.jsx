@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FiClipboard } from "react-icons/fi";
-import { formatPrivateKey } from "../../utils/FormatPublicKey";
+import { formatPrivateKey } from "../../utils/formatKeys.js";
 
 export default function PrivateKeyPopup({ setPrivateKey, privateKeyPop, setShowPrivateKeyPop }) {
     const [inputValue, setInputValue] = useState("");

@@ -1,6 +1,9 @@
 import User from "../models/User.js";
 import Challenge from "../models/Challenge.js";
 import { generateKeyPair } from "../utils/cryptoGenerator.js";
+import { formatPublicKey, formatPrivateKey } from "../utils/formatKeys.js";
+import { createVerificationHash, createServerSignature } from "../utils/serverSignature.js";
+import { createKeysPdf } from "../utils/pdfGenerator.js";
 import handleSendErrors from "../utils/handleSendErrors.js";
 import generateJWT from "../utils/generateJWT.js";
 import crypto from "crypto";
@@ -11,12 +14,40 @@ export const signup = async (req, res, next) => {
         await User.create({ publicKey: publicKey.trim() });
         res.status(201).json({ message: "User created successfully", success: true, keys: { publicKey, privateKey } });
     } catch (error) {
-        if (error.code === 11000) {
-            return handleSendErrors("This user is already registered", false, 400, next);
-        }
         handleSendErrors(error.message || "Internal server error", false, 500, next);
     }
 };
+
+export const downloadKeys = async (req, res, next) => {
+    try {
+        const { publicKey, privateKey } = req.body;
+
+        if (!publicKey || !privateKey) {
+            return handleSendErrors("Both keys are required", false, 400, next);
+        }
+
+        // Format keys
+        const formattedPublicKey = formatPublicKey(publicKey);
+        const formattedPrivateKey = formatPrivateKey(privateKey);
+
+        // Create hash & server signature
+        const hash = createVerificationHash(formattedPublicKey, formattedPrivateKey);
+        const signature = createServerSignature(hash);
+
+        // Generate PDF
+        const pdfBuffer = await createKeysPdf(formattedPublicKey, formattedPrivateKey, signature);
+
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", "attachment; filename=mrhoba-keys.pdf");
+        res.send(pdfBuffer);
+    } catch (error) {
+        console.log(error)
+        handleSendErrors(error.message || "Internal server error", false, 500, next);
+    }
+};
+
+
+
 
 export const createChallenge = async (req, res, next) => {
     try {

@@ -5,6 +5,11 @@ export const signUp = async () => {
 	return res.data;
 };
 
+export const downloadKeys = async (publicKey, privateKey) => {
+	const res = await API.post("/auth/download", { publicKey, privateKey }, { responseType: "blob" });
+	return res.data;
+}
+
 export const createChallenge = async(publicKey) => {
 	const res = await API.post("/auth/challenge", { publicKey });
 	return res.data;

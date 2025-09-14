@@ -5,7 +5,7 @@ import { FiLogIn, FiKey, FiAlertCircle } from "react-icons/fi";
 import { ImSpinner8 } from "react-icons/im";
 import { AnimatedBubbles } from "../components/AnimatedBg.jsx";
 import { signChallenge } from "../utils/crypto";
-import { formatPublicKey } from "../utils/FormatPublicKey.js";
+import { formatPublicKey } from "../utils/formatKeys.js";
 
 export default function Login() {
 	const prvKey = useRef(null);

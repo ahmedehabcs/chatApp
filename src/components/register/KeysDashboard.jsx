@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { FiShield, FiKey, FiLock, FiDownload, FiCheck } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { downloadKeys } from "../../api/auth.js";
 import KeyCard from "./KeyCard";
 import ActionCard from "./ActionCard";
 
@@ -9,6 +10,7 @@ export default function KeysDashboard({ publicKey, privateKey, setShowPopup }) {
     const [copiedPrivate, setCopiedPrivate] = useState(false);
     const timeoutRef = useRef(null);
     const navigate = useNavigate();
+
 
     const handleCopy = (keyType, keyValue) => {
         navigator.clipboard.writeText(keyValue);
@@ -28,8 +30,21 @@ export default function KeysDashboard({ publicKey, privateKey, setShowPopup }) {
         navigate("/login");
     };
 
-    const downloadKeys = () => {
-        alert("downloaded");
+    const handleDownloadKeys = async () => {
+        try {
+            const res = await downloadKeys(publicKey, privateKey);
+            console.log(res);
+            const url = window.URL.createObjectURL(new Blob([res]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "keys.pdf");
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            console.log(res);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     return (
@@ -78,7 +93,7 @@ export default function KeysDashboard({ publicKey, privateKey, setShowPopup }) {
                         description="Save both keys in a secure file for offline storage."
                         buttonText="Download File"
                         buttonIcon={<FiDownload size={18} />}
-                        onClick={downloadKeys}
+                        onClick={handleDownloadKeys}
                         bgClasses="bg-gradient-to-r from-[var(--color-main)]/20 to-[var(--color-secondary)]/20"
                         btnClasses="bg-gradient-to-r from-[var(--color-main)] to-[var(--color-secondary)] text-white"
                     />
