@@ -57,7 +57,7 @@ export default function App() {
 
           <Route path="/verify" element={<Verify />} />
           
-          <Route path="*" element={<Home />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Suspense>
     </Router>
