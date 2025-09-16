@@ -1,9 +1,9 @@
 import { useEffect, useState, lazy } from 'react';
 import { FiUserPlus, FiLoader } from 'react-icons/fi';
-import { outgoingRequest } from "../../api/friends.js";
+import { outgoingRequest } from "../../../api/friends.js";
 import { useParams, useNavigate } from "react-router-dom";
-import { formatPublicKey } from '../../utils/formatKeys.js';
-import NoteMessageStruct from '../NoteMessageStruct.jsx';
+import { formatPublicKey } from '../../../utils/formatKeys.js';
+import NoteMessageStruct from '../../NoteMessageStruct.jsx';
 const AddFriendInput = lazy(() => import("./AddFriendInput.jsx"));
 
 export default function AddFriend() {

@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import http from "http";
 import cors from "cors";
+import compression from "compression";
 
 import logger from "./middlewares/logger.js";
 import errorHandler from "./middlewares/errorHandler.js";
@@ -25,6 +26,7 @@ const app = express();
 await connectDB();
 // Middleware
 app.use(express.json());
+app.use(compression());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.resolve("../dist")));
 app.use(cookieParser());
@@ -46,9 +48,9 @@ app.get("/", (req, res) => {
 })
 app.use(errorHandler);
 
-// 👉 Create HTTP server
+// Create HTTP server
 const server = http.createServer(app);
 
-// 👉 Initialize sockets
+// Initialize sockets
 initSocket(server);
 server.listen(PORT, () => console.log(`Server + Socket running on http://localhost:${PORT}`));

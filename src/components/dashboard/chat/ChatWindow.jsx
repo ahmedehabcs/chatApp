@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { EmptyChatState, NoMessagesState } from './chat/EmptyState.jsx';
-import { encryptMessage, decryptMessage, signMessage, verifySignature } from "../../utils/messageFlow.js";
-import { validatePrivateKey } from '../../utils/validatePrivateKey.js';
-import useAuth from "../../hooks/useAuth.jsx";
-import useSocket from '../../hooks/useSocket.jsx';
-import ChatHeader from './chat/ChatHeader.jsx';
-import MessageInput from './chat/MessageInput.jsx';
-import MessageBubble from './chat/MessageBubble.jsx';
+import { EmptyChatState, NoMessagesState } from './EmptyState.jsx';
+import { encryptMessage, decryptMessage, signMessage, verifySignature } from "../../../utils/messageFlow.js";
+import { validatePrivateKey } from '../../../utils/validatePrivateKey.js';
+import { groupMessagesByDay } from "../../../utils/groupMessagesByDay.js";
+import useAuth from "../../../hooks/useAuth.jsx";
+import useSocket from '../../../hooks/useSocket.jsx';
+import ChatHeader from './ChatHeader.jsx';
+import MessageInput from './MessageInput.jsx';
+import MessageDayGroup from './MessageDayGroup.jsx';
 
 export default function ChatWindow({ privateKey, selectedFriend, setSelectedFriend, showChat, setShowChat }) {
     const [messages, setMessages] = useState([]);
@@ -90,54 +91,53 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
 
     const initialLoad = useRef(true);
     useEffect(() => {
-    if (!selectedFriend || !socketRef.current || !showChat) return;
-    const socket = socketRef.current;
-    initialLoad.current = true;
+        if (!selectedFriend || !socketRef.current || !showChat) return;
+        const socket = socketRef.current;
+        initialLoad.current = true;
 
-    // join chat room
-    socket.emit("joinChat", { otherPublicKey: selectedFriend.publicKey });
+        // join chat room
+        socket.emit("joinChat", { otherPublicKey: selectedFriend.publicKey });
 
-    // ⬇️ first load: history
-    socket.on("chatHistory", async (msgs) => {
-        const decryptedMessages = await Promise.all(
-            msgs.map(async (msg) => {
-                try {
-                    const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
-                    const plaintext = await decryptMessage(privateKey, ciphertext);
-                    const isValid = await verifySignature(msg.sender, plaintext, msg.signature);
-                    return { ...msg, plaintext, verified: isValid };
-                } catch {
-                    return { ...msg, plaintext: "[Decryption failed]", verified: false };
-                }
-            })
-        );
-        setMessages(decryptedMessages);
-        setCurrentChatId(msgs.length ? msgs[0].chatId : null);
-        initialLoad.current = false;
-    });
+        // ⬇️ first load: history
+        socket.on("chatHistory", async (msgs) => {
+            const decryptedMessages = await Promise.all(
+                msgs.map(async (msg) => {
+                    try {
+                        const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
+                        const plaintext = await decryptMessage(privateKey, ciphertext);
+                        const isValid = await verifySignature(msg.sender, plaintext, msg.signature);
+                        return { ...msg, plaintext, verified: isValid };
+                    } catch {
+                        return { ...msg, plaintext: "[Decryption failed]", verified: false };
+                    }
+                })
+            );
+            setMessages(decryptedMessages);
+            setCurrentChatId(msgs.length ? msgs[0].chatId : null);
+            initialLoad.current = false;
+        });
 
-    // ⬇️ realtime new messages
-    socket.on("newMessage", async (msg) => {
-        try {
-            const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
-            const decrypted = await decryptMessage(privateKey, ciphertext);
-            const isValid = await verifySignature(msg.sender, decrypted, msg.signature);
-            setMessages((prev) => {
-                const updated = [...prev, { ...msg, plaintext: decrypted, verified: isValid }];
-                if (!initialLoad.current) setTimeout(scrollToBottom, 100);
-                return updated;
-            });
-        } catch {
-            setMessages((prev) => [...prev, { ...msg, plaintext: "[Decryption failed]", verified: false }]);
-        }
-    });
+        // ⬇️ realtime new messages
+        socket.on("newMessage", async (msg) => {
+            try {
+                const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
+                const decrypted = await decryptMessage(privateKey, ciphertext);
+                const isValid = await verifySignature(msg.sender, decrypted, msg.signature);
+                setMessages((prev) => {
+                    const updated = [...prev, { ...msg, plaintext: decrypted, verified: isValid }];
+                    if (!initialLoad.current) setTimeout(scrollToBottom, 100);
+                    return updated;
+                });
+            } catch {
+                setMessages((prev) => [...prev, { ...msg, plaintext: "[Decryption failed]", verified: false }]);
+            }
+        });
 
-    return () => {
-        socket.off("chatHistory");
-        socket.off("newMessage");
-    };
-}, [selectedFriend, socketRef, showChat]);
-
+        return () => {
+            socket.off("chatHistory");
+            socket.off("newMessage");
+        };
+    }, [selectedFriend, socketRef, showChat]);
 
     // online status
     useEffect(() => {
@@ -174,18 +174,25 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
             </div>
         );
     }
+
+    const grouped = groupMessagesByDay(messages);
+    const days = Object.keys(grouped).sort(
+        (a, b) => new Date(a) - new Date(b)
+    );
+
     return (
         <div className={`flex flex-col h-full ${showChat ? 'block w-full' : 'hidden lg:block w-full'}`}>
             <ChatHeader selectedFriend={selectedFriend} handleBackToFriends={handleBackToFriends} noteMessage={noteMessage} success={success} onClearNoteMessage={onClearNoteMessage} />
             <div className="flex-1 p-4 overflow-y-auto pb-5 scrollbar-none flex flex-col-reverse">
-                {messages.length > 0 ? (
-                    [...messages].reverse().map((message, index) => {
-                        const time = new Date(message.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
-                        const isOwnMessage = message.sender === user?.publicKey;
-                        return (
-                            <MessageBubble key={index} message={message} isOwnMessage={isOwnMessage} time={time} />
-                        );
-                    })
+                {days.length > 0 ? (
+                    [...days].reverse().map((day) => (
+                        <MessageDayGroup
+                            key={day}
+                            day={day}
+                            messages={grouped[day]}
+                            user={user}
+                        />
+                    ))
                 ) : (
                     <NoMessagesState />
                 )}

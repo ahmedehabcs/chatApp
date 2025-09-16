@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { FiCheck, FiX } from 'react-icons/fi';
-import { approveRequest, rejectRequest } from '../../api/friends.js';
-import NoteMessageStruct from '../NoteMessageStruct.jsx';
-import truncatePublicKey from "../../utils/truncatePublicKey.js";
-import useSocket from "../../hooks/useSocket.jsx";
+import { approveRequest, rejectRequest } from '../../../api/friends.js';
+import NoteMessageStruct from '../../NoteMessageStruct.jsx';
+import truncatePublicKey from "../../../utils/truncatePublicKey.js";
+import useSocket from "../../../hooks/useSocket.jsx";
 
 export default function FriendRequests({ setTotalFriend }) {
     const [requests, setRequests] = useState([]);

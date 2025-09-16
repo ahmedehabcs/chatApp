@@ -2,11 +2,11 @@ import { useState, lazy } from 'react';
 import { FiMessageSquare, FiUserPlus } from 'react-icons/fi';
 import { AnimatedBubbles, AnimatedTriangles } from '../components/AnimatedBg.jsx';
 import FriendList from '../components/dashboard/FriendList';
-import ChatWindow from '../components/dashboard/ChatWindow';
-import FriendRequests from '../components/dashboard/FriendRequests';
+import ChatWindow from '../components/dashboard/chat/ChatWindow';
+import FriendRequests from '../components/dashboard/friend request/FriendRequests';
 import SettingsButton from '../components/dashboard/SettingsButton.jsx';
-import FriendRequestButton from "../components/dashboard/FriendRequestButton.jsx";
-const AddFriend = lazy(() => import("../components/dashboard/AddFriend.jsx"));
+import FriendRequestButton from "../components/dashboard/friend request/FriendRequestButton.jsx";
+const AddFriend = lazy(() => import("../components/dashboard/add friend/AddFriend.jsx"));
 const PrivateKeyPopup = lazy(() => import("../components/dashboard/privateKeyPopup.jsx"));
 
 export default function Dashboard({ privateKey, setPrivateKey }) {

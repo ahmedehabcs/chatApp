@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { FiKey, FiCamera } from "react-icons/fi";
 import { BrowserQRCodeReader } from "@zxing/browser";
-import URL from "../URL";
+import URL from "../../URL";
 
 export default function FriendInput({ handleInputChange, handleKeyPress, publicKey, setPublicKey }) {
     const [scanning, setScanning] = useState(false);
