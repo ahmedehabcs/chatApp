@@ -21,7 +21,7 @@ export default function Register() {
 			localStorage.setItem("publicKey", response.keys.publicKey);
 			setShowPopup(true);
 		} catch (err) {
-			setError(err?.response?.message || "Something went wrong");
+			setError(err?.response?.data?.message || "Something went wrong");
 		} finally {
 			setIsLoading(false);
 		}

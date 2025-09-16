@@ -1,6 +1,7 @@
 import express from "express";
 import { signup, createSignature, verifySignature, createChallenge, verifySignin, logout } from "../controllers/authController.js";
 import { getCurrentUser } from "../controllers/userController.js";
+import { rateLimitSignup } from "../middlewares/rateLimitSignup.js";
 import verifyJWT from "../middlewares/verifyJWT.js";
 
 const router = express.Router();
