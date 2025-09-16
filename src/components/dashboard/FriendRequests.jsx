@@ -3,7 +3,6 @@ import { FiCheck, FiX } from 'react-icons/fi';
 import { approveRequest, rejectRequest } from '../../api/friends.js';
 import NoteMessageStruct from '../NoteMessageStruct.jsx';
 import truncatePublicKey from "../../utils/truncatePublicKey.js";
-import useAuth from "../../hooks/useAuth.jsx";
 import useSocket from "../../hooks/useSocket.jsx";
 
 export default function FriendRequests({ setTotalFriend }) {
@@ -11,8 +10,7 @@ export default function FriendRequests({ setTotalFriend }) {
     const [noteMessage, setNoteMessage] = useState("");
     const [success, setSuccess] = useState(null);
 
-    const { user } = useAuth();
-    const socketRef = useSocket(user?.publicKey);
+    const socketRef = useSocket();
 
     useEffect(() => {
         const socket = socketRef.current;
@@ -28,7 +26,7 @@ export default function FriendRequests({ setTotalFriend }) {
             socket.off("request:update", fetchRequests);
             socket.off("request:list:response");
         };
-    }, [socketRef, user?.publicKey]);
+    }, [socketRef]);
 
     // accept or reject
     const handleRequest = async (pk, action) => {

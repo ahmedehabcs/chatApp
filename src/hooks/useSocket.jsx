@@ -4,21 +4,19 @@ import URL from "../components/URL.jsx";
 
 let globalSocket = null;
 
-export default function useSocket(publicKey) {
+export default function useSocket() {
     const socketRef = useRef(null);
 
     useEffect(() => {
-        if (!publicKey) return;
-
         if (!globalSocket) {
             globalSocket = io(URL, {
-                auth: { publicKey },
+                withCredentials: true,
                 transports: ["websocket"],
             });
         }
 
         socketRef.current = globalSocket;
-    }, [publicKey]);
+    }, []);
 
     return socketRef;
 }

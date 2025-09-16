@@ -5,7 +5,6 @@ import { FiTrash2 } from 'react-icons/fi';
 import NoteMessageStruct from '../NoteMessageStruct.jsx';
 import NicknamePopup from "../NicknamePopup.jsx";
 import truncatePublicKey from "../../utils/truncatePublicKey.js";
-import useAuth from "../../hooks/useAuth.jsx";
 import useSocket from "../../hooks/useSocket.jsx";
 
 export default function FriendList({ setTotalFriend, selectedFriend, setSelectedFriend, showChat, setShowChat }) {
@@ -13,8 +12,7 @@ export default function FriendList({ setTotalFriend, selectedFriend, setSelected
     const [noteMessage, setNoteMessage] = useState("");
     const [success, setSuccess] = useState(null);
     const [popupFriend, setPopupFriend] = useState(null);
-    const { user } = useAuth();
-    const socketRef = useSocket(user?.publicKey);
+    const socketRef = useSocket();
 
     useEffect(() => {
         const socket = socketRef.current;
@@ -30,7 +28,7 @@ export default function FriendList({ setTotalFriend, selectedFriend, setSelected
             socket.off("friend:update", fetchFriends);
             socket.off("friend:list:response");
         };
-    }, [socketRef, user?.publicKey]);
+    }, [socketRef]);
 
     // remove friend
     const handleRemoveFriend = async (e, pk) => {

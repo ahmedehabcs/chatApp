@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import socketAuth from "../middlewares/socketAuth.js";
 import { handleMessageEvents } from "../socketHandlers/messageHandler.js";
 import { handleOnlineStatus } from "../socketHandlers/onlineStatus.js";
 import { handleFriendEvents } from "../socketHandlers/friendHandler.js";
@@ -13,13 +14,7 @@ export const initSocket = (server) => {
     });
     ioInstance = io;
 
-    // Auth middleware
-    io.use((socket, next) => {
-        const { publicKey } = socket.handshake.auth;
-        if (!publicKey) return next(new Error("Authentication error"));
-        socket.userPublicKey = publicKey;
-        next();
-    });
+    io.use(socketAuth);
 
     io.on("connection", (socket) => {        
         socket.join(`user_${socket.userPublicKey}`);

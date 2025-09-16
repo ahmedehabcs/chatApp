@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { getMessage } from "../../api/messages.js";
 import { EmptyChatState, NoMessagesState } from './chat/EmptyState.jsx';
 import { encryptMessage, decryptMessage, signMessage, verifySignature } from "../../utils/messageFlow.js";
 import { validatePrivateKey } from '../../utils/validatePrivateKey.js';
@@ -17,7 +16,7 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
     const messagesEndRef = useRef(null);
     const [currentChatId, setCurrentChatId] = useState(null);
     const { user } = useAuth();
-    const socketRef = useSocket(user?.publicKey);
+    const socketRef = useSocket();
 
     /* Non-changeable functions */
     useEffect(() => {
@@ -91,50 +90,54 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
 
     const initialLoad = useRef(true);
     useEffect(() => {
-        if (!selectedFriend || !socketRef.current || !showChat) return;
-        const socket = socketRef.current;
-        initialLoad.current = true;
-        const joinChatRoom = async () => {
-            try {
-                const res = await getMessage(selectedFriend.publicKey);
-                const decryptedMessages = await Promise.all(
-                    res.messages.map(async (msg) => {
-                        try {
-                            const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
-                            const plaintext = await decryptMessage(privateKey, ciphertext);
-                            const isValid = await verifySignature(msg.sender, plaintext, msg.signature);
-                            return { ...msg, plaintext, verified: isValid };
-                        } catch {
-                            return { ...msg, plaintext: "[Decryption failed]", verified: false };
-                        }
-                    })
-                );
-                setMessages(decryptedMessages);
-                setCurrentChatId(res.chat);
-                socket.emit("joinChat", { otherPublicKey: selectedFriend.publicKey });
-                initialLoad.current = false;
-            } catch (err) {
-                setNoteMessage(err.response?.data?.message || "Failed to join chat");
-            }
-        };
-        joinChatRoom();
-        const handleNewMessage = async (msg) => {
-            try {
-                const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
-                const decrypted = await decryptMessage(privateKey, ciphertext);
-                const isValid = await verifySignature(msg.sender, decrypted, msg.signature);
-                setMessages((prev) => {
-                    const updated = [...prev, { ...msg, plaintext: decrypted, verified: isValid }];
-                    if (!initialLoad.current) setTimeout(scrollToBottom, 100);
-                    return updated;
-                });
-            } catch {
-                setMessages((prev) => [...prev, { ...msg, plaintext: "[Decryption failed]", verified: false }]);
-            }
-        };
-        socket.on("newMessage", handleNewMessage);
-        return () => { socket.off("newMessage", handleNewMessage) };
-    }, [selectedFriend, socketRef, showChat]);
+    if (!selectedFriend || !socketRef.current || !showChat) return;
+    const socket = socketRef.current;
+    initialLoad.current = true;
+
+    // join chat room
+    socket.emit("joinChat", { otherPublicKey: selectedFriend.publicKey });
+
+    // ⬇️ first load: history
+    socket.on("chatHistory", async (msgs) => {
+        const decryptedMessages = await Promise.all(
+            msgs.map(async (msg) => {
+                try {
+                    const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
+                    const plaintext = await decryptMessage(privateKey, ciphertext);
+                    const isValid = await verifySignature(msg.sender, plaintext, msg.signature);
+                    return { ...msg, plaintext, verified: isValid };
+                } catch {
+                    return { ...msg, plaintext: "[Decryption failed]", verified: false };
+                }
+            })
+        );
+        setMessages(decryptedMessages);
+        setCurrentChatId(msgs.length ? msgs[0].chatId : null);
+        initialLoad.current = false;
+    });
+
+    // ⬇️ realtime new messages
+    socket.on("newMessage", async (msg) => {
+        try {
+            const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;
+            const decrypted = await decryptMessage(privateKey, ciphertext);
+            const isValid = await verifySignature(msg.sender, decrypted, msg.signature);
+            setMessages((prev) => {
+                const updated = [...prev, { ...msg, plaintext: decrypted, verified: isValid }];
+                if (!initialLoad.current) setTimeout(scrollToBottom, 100);
+                return updated;
+            });
+        } catch {
+            setMessages((prev) => [...prev, { ...msg, plaintext: "[Decryption failed]", verified: false }]);
+        }
+    });
+
+    return () => {
+        socket.off("chatHistory");
+        socket.off("newMessage");
+    };
+}, [selectedFriend, socketRef, showChat]);
+
 
     // online status
     useEffect(() => {

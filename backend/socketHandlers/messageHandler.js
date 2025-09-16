@@ -1,9 +1,9 @@
 import Chat from "../models/Chat.js";
 import Message from "../models/Message.js";
+
 export const handleMessageEvents = (io, socket) => {
     socket.on("joinChat", async ({ otherPublicKey }) => {
         const userpk = socket.userPublicKey;
-
         if (!otherPublicKey) {
             return socket.emit("error", { message: "Other user public key required" });
         }
@@ -13,8 +13,9 @@ export const handleMessageEvents = (io, socket) => {
             chat = new Chat({ participants: [userpk, otherPublicKey] });
             await chat.save();
         }
-
         socket.join(chat.chatId);
+        const messages = await Message.find({ chatId: chat.chatId }).sort({ createdAt: 1 }).lean();
+        socket.emit("chatHistory", messages);
         socket.emit("joinedChat", { chatId: chat.chatId });
     });
 
@@ -22,19 +23,16 @@ export const handleMessageEvents = (io, socket) => {
         try {
             const sender = socket.userPublicKey;
             if (!chatId) return socket.emit("error", { message: "Chat ID is required" });
-            
-            if (!ciphertexts?.sender || !ciphertexts?.recipient || !signature) return socket.emit("error", { message: "Missing required message fields" });
+            if (!ciphertexts?.sender || !ciphertexts?.recipient || !signature) {
+                return socket.emit("error", { message: "Missing required message fields" });
+            }
             const chat = await Chat.findOne({ chatId });
-            if (!chat) return socket.emit("error", { message: "Chat does not exist" });            
+            if (!chat) return socket.emit("error", { message: "Chat does not exist" });
             if (!chat.participants.includes(sender)) return socket.emit("error", { message: "You are not part of this chat" });
-
             const newMessage = new Message({
                 chatId,
                 sender,
-                ciphertexts: {
-                    sender: ciphertexts.sender,
-                    recipient: ciphertexts.recipient,
-                },
+                ciphertexts,
                 signature,
             });
             await newMessage.save();
