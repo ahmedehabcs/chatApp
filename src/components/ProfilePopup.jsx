@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { FiUser, FiX, FiLogOut, FiShare2, FiCopy } from "react-icons/fi";
 import { QRCodeSVG } from "qrcode.react";
 import { logout } from "../api/auth.js";
+import { clearDB } from "../utils/db.js";
 import useAuth from "../hooks/useAuth.jsx";
 import URL from "./URL.jsx";
 
@@ -13,6 +14,7 @@ export default function ProfilePopup({ showProfile, setShowProfile }) {
     const logoutbtn = async () => {
         const confirmed = window.confirm("Are you sure you want to logout!");
         if (!confirmed) return;
+        await clearDB();
         await logout();
         window.location.reload();
     };

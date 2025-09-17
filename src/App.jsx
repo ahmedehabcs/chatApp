@@ -1,5 +1,6 @@
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
+import { getPrivateKey } from "./utils/db.js";
 import Loading from "./components/Loading.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
@@ -11,6 +12,13 @@ const Verify = lazy(() => import("./pages/Verify.jsx"));
 
 export default function App() {
   const [privateKey, setPrivateKey] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      const key = await getPrivateKey();
+      if (key) setPrivateKey(key);
+    })();
+  }, []);
 
   return (
     <Router>
@@ -56,7 +64,6 @@ export default function App() {
           />
 
           <Route path="/verify" element={<Verify />} />
-          
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Suspense>

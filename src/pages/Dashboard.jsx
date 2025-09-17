@@ -1,4 +1,4 @@
-import { useState, lazy } from 'react';
+import { useState, lazy, useEffect } from 'react';
 import { FiMessageSquare, FiUserPlus } from 'react-icons/fi';
 import { AnimatedBubbles, AnimatedTriangles } from '../components/AnimatedBg.jsx';
 import FriendList from '../components/dashboard/FriendList';
@@ -13,8 +13,16 @@ export default function Dashboard({ privateKey, setPrivateKey }) {
     const [selectedFriend, setSelectedFriend] = useState(null);
     const [activeView, setActiveView] = useState('chats');
     const [showChat, setShowChat] = useState(false);
-    const [privateKeyPop, setShowPrivateKeyPop] = useState(true);
+    const [privateKeyPop, setShowPrivateKeyPop] = useState(null);
     const [totalFriend, setTotalFriend] = useState({ friends: 0, requests: 0 });
+
+    useEffect(() => {
+        if (!privateKey) {
+            setShowPrivateKeyPop(true);
+        } else {
+            setShowPrivateKeyPop(false);
+        }
+    }, [privateKey]);
 
     return (
         <section className="min-h-[100dvh] grass-dark text-[var(--color-text)] relative overflow-hidden">

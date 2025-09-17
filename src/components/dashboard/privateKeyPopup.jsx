@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FiClipboard } from "react-icons/fi";
 import { formatPrivateKey } from "../../utils/formatKeys.js";
+import { savePrivateKey } from "../../utils/db.js";
 
 export default function PrivateKeyPopup({ setPrivateKey, privateKeyPop, setShowPrivateKeyPop }) {
     const [inputValue, setInputValue] = useState("");
@@ -9,7 +10,11 @@ export default function PrivateKeyPopup({ setPrivateKey, privateKeyPop, setShowP
         e.preventDefault();
         const rawValue = inputValue.trim();
         if (!rawValue) return;
-        setPrivateKey(formatPrivateKey(rawValue));
+
+        const formatted = formatPrivateKey(rawValue);
+        setPrivateKey(formatted);
+        savePrivateKey(formatted);
+
         setShowPrivateKeyPop(false);
         setInputValue(null);
     };
