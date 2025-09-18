@@ -5,10 +5,11 @@ const messageSchema = new mongoose.Schema(
 		chatId: { type: String, required: true },
 		sender: { type: String, required: true },
 		ciphertexts: {
-			sender: { type: String, required: true },
-			recipient: { type: String, required: true },
+			sender: { type: String },
+			recipient: { type: String },
 		},
-		signature: { type: String, required: true },
+		signature: { type: String },
+		deleted: { type: Boolean, default: false },
 	},
 	{ timestamps: true }
 );

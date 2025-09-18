@@ -11,7 +11,7 @@ export default function MessageDayGroup({ day, messages, user }) {
         <div className="mb-6">
             {/* Date header */}
             <div className="flex justify-center my-3">
-                <span className="px-3 py-1 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full text-[var(--color-text-light)]">
+                <span className="px-3 py-1 text-xs border border-[#fff] rounded-full text-[var(--color-text)]">
                     {formattedDay}
                 </span>
             </div>

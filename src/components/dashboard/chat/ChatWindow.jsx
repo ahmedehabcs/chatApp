@@ -98,7 +98,9 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
         // join chat room
         socket.emit("joinChat", { otherPublicKey: selectedFriend.publicKey });
 
-        // ⬇️ first load: history
+        socket.on("joinedChat", ({ chatId }) => {
+            setCurrentChatId(chatId);
+        });
         socket.on("chatHistory", async (msgs) => {
             const decryptedMessages = await Promise.all(
                 msgs.map(async (msg) => {
@@ -113,11 +115,9 @@ export default function ChatWindow({ privateKey, selectedFriend, setSelectedFrie
                 })
             );
             setMessages(decryptedMessages);
-            setCurrentChatId(msgs.length ? msgs[0].chatId : null);
+            if (msgs.length) setCurrentChatId(msgs[0].chatId);
             initialLoad.current = false;
         });
-
-        // ⬇️ realtime new messages
         socket.on("newMessage", async (msg) => {
             try {
                 const ciphertext = msg.sender === user?.publicKey ? msg.ciphertexts.sender : msg.ciphertexts.recipient;

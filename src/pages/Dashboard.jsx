@@ -1,6 +1,6 @@
 import { useState, lazy, useEffect } from 'react';
 import { FiMessageSquare, FiUserPlus } from 'react-icons/fi';
-import { AnimatedBubbles, AnimatedTriangles } from '../components/AnimatedBg.jsx';
+import { AnimatedTriangles } from '../components/AnimatedBg.jsx';
 import FriendList from '../components/dashboard/FriendList';
 import ChatWindow from '../components/dashboard/chat/ChatWindow';
 import FriendRequests from '../components/dashboard/friend request/FriendRequests';
@@ -26,7 +26,6 @@ export default function Dashboard({ privateKey, setPrivateKey }) {
 
     return (
         <section className="min-h-[100dvh] grass-dark text-[var(--color-text)] relative overflow-hidden">
-            <AnimatedBubbles />
             <AnimatedTriangles />
             <div className="relative z-10 h-[100dvh] flex flex-col">
                 <header className={`p-4 relative ${showChat ? 'lg:block hidden' : 'block'}`}>
