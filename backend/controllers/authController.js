@@ -93,13 +93,18 @@ export const verifySignin = async (req, res, next) => {
         await Challenge.deleteOne({ _id: challengeDoc._id });
 
         const token = generateJWT(publicKey);
+        // res.cookie("token", token, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === "production",
+        //     sameSite: "strict",
+        //     maxAge: 60 * 60 * 1000 // 1h
+        // });
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 60 * 60 * 1000 // 1h
+            secure: true,
+            sameSite: "None",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
-
         res.json({ success: true, message: "Signin successful" });
     } catch (error) {
         console.log(error);
@@ -109,11 +114,16 @@ export const verifySignin = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
     try {
+        // res.clearCookie("token", {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === "production",
+        //     sameSite: "strict",
+        // })
         res.clearCookie("token", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-        })
+            secure: true,
+            sameSite: "None",
+        });
         res.json({ success: true, message: "Logged out successfully" });
     } catch (error) {
         handleSendErrors(error.message || "Internal server error", false, 500, next);
