@@ -318,7 +318,7 @@ export async function createKeysPdf(publicKey, privateKey, signature) {
 
   y -= 15;
 
-  page.drawText(`${URL}/#/verify`, {
+  page.drawText(`https://secure-chat-beryl.vercel.app/#/verify`, {
     x: margin,
     y,
     size: 9,
