@@ -36,7 +36,7 @@ app.use(cors({
     "http://localhost:3000", 
     "http://127.0.0.1:3000", 
     "https://h1zslq1r-3000.euw.devtunnels.ms",
-    "https://secure-chat-beryl.vercel.app"
+    "https://secure2ee.vercel.app"
     ],
     credentials: true
 }));
