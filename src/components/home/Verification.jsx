@@ -58,9 +58,9 @@ export default function Verification() {
         <div className="text-center">
           <button
             onClick={() => navigate(`/verify`)}
-            className="inline-flex items-center justify-center px-8 py-4 rounded-2xl font-semibold text-lg bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-hover)] text-[var(--color-text-inverse)] shadow-md hover:shadow-lg transition-all gap-3"
+            className="inline-flex items-center justify-center px-8 py-4 rounded-2xl font-semibold text-sm sm:text-lg bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-hover)] text-[var(--color-text-inverse)] shadow-md hover:shadow-lg transition-all gap-3"
           >
-            <FiCheckSquare size={22} aria-hidden /> Verify Your Document Now
+            <FiCheckSquare size={22} aria-hidden /> Verify Your Document
           </button>
           <p className="text-[var(--color-text-light)] mt-4 text-sm md:text-base">
             Built with the same cryptographic principles that protect your chats.
