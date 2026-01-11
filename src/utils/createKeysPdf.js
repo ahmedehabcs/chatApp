@@ -1,5 +1,4 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
-import URL from "../components/URL";
 
 function wrapTextToLines(text, font, fontSize, maxWidth) {
   // Returns an array of lines that fit within maxWidth.
@@ -93,7 +92,7 @@ export async function createKeysPdf(publicKey, privateKey, signature) {
 
   // Title
   // center the title: measure and compute x
-  const title = "MRHOBA E2EE ENCRYPTION KEYS";
+  const title = "AHMED E2EE ENCRYPTION KEYS";
   const titleWidth = helveticaBold.widthOfTextAtSize(title, 22);
   page.drawText(title, {
     x: (width - titleWidth) / 2,
@@ -318,7 +317,7 @@ export async function createKeysPdf(publicKey, privateKey, signature) {
 
   y -= 15;
 
-  page.drawText(`https://secure-chat-beryl.vercel.app/#/verify`, {
+  page.drawText(`${import.meta.env.VITE_FRONTEND_URL}/verify`, {
     x: margin,
     y,
     size: 9,

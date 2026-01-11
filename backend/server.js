@@ -25,21 +25,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 await connectDB();
 // Middleware
+app.use(logger);
 app.use(express.json());
 app.use(compression());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.resolve("../dist")));
 app.use(cookieParser());
-app.use(logger);
-app.use(cors({
-    origin: [
-    "http://localhost:3000", 
-    "http://127.0.0.1:3000", 
-    "https://h1zslq1r-3000.euw.devtunnels.ms",
-    "https://secure2ee.vercel.app"
-    ],
-    credentials: true
-}));
+app.use(cors({ origin: process.env.WEBSITE_DOMAIN, credentials: true }));
 
 
 app.use("/api/auth", authRouter);
@@ -58,4 +50,4 @@ const server = http.createServer(app);
 
 // Initialize sockets
 initSocket(server);
-server.listen(PORT, () => console.log(`Server + Socket running on http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

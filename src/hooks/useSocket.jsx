@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { io } from "socket.io-client";
-import URL from "../components/URL.jsx";
 
 let globalSocket = null;
 
@@ -9,7 +8,7 @@ export default function useSocket() {
 
     useEffect(() => {
         if (!globalSocket) {
-            globalSocket = io(URL, {
+            globalSocket = io(import.meta.env.VITE_BACKEND_URL, {
                 withCredentials: true,
                 transports: ["websocket"],
             });

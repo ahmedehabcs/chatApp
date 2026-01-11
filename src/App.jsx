@@ -1,4 +1,4 @@
-import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { getPrivateKey } from "./utils/db.js";
 import Loading from "./components/Loading.jsx";
@@ -21,7 +21,6 @@ export default function App() {
   }, []);
 
   return (
-    <Router>
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path="/" element={<Navigate to="/home" />} />
@@ -67,6 +66,5 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Suspense>
-    </Router>
   );
 }

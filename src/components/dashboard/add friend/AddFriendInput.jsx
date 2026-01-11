@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { FiKey, FiCamera } from "react-icons/fi";
 import { BrowserQRCodeReader } from "@zxing/browser";
-import URL from "../../URL";
 
 export default function FriendInput({ handleInputChange, handleKeyPress, publicKey, setPublicKey }) {
     const [scanning, setScanning] = useState(false);
@@ -29,7 +28,7 @@ export default function FriendInput({ handleInputChange, handleKeyPress, publicK
                         (result, err) => {
                             if (result) {
                                 const fullText = result.getText();
-                                const allowedDomain = `${URL}/`;
+                                const allowedDomain = `${import.meta.env.VITE_FRONTEND_URL}/`;
 
                                 // Check if scanned QR starts with our domain
                                 if (!fullText.startsWith(allowedDomain)) {

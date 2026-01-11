@@ -4,7 +4,6 @@ import { QRCodeSVG } from "qrcode.react";
 import { logout } from "../api/auth.js";
 import { clearDB } from "../utils/db.js";
 import useAuth from "../hooks/useAuth.jsx";
-import URL from "./URL.jsx";
 
 export default function ProfilePopup({ showProfile, setShowProfile }) {
     const { user } = useAuth();
@@ -20,7 +19,7 @@ export default function ProfilePopup({ showProfile, setShowProfile }) {
     };
 
     const handleShareKey = async () => {
-        const link = `${URL}/#/dashboard/add/${encodeURIComponent(user?.id)}`;
+        const link = `${import.meta.env.VITE_FRONTEND_URL}/dashboard/add/${encodeURIComponent(user?.id)}`;
         const shareData = {
             title: "My Public Key",
             text: "Add me as a friend on Secure Chat!",
@@ -84,7 +83,7 @@ export default function ProfilePopup({ showProfile, setShowProfile }) {
                                 <div className="p-4 bg-white rounded-lg border border-[var(--color-border)]">
                                     <QRCodeSVG
                                         ref={qrRef}
-                                        value={`${URL}/#/dashboard/add/${user?.id}`}
+                                        value={`${import.meta.env.VITE_FRONTEND_URL}/dashboard/add/${user?.id}`}
                                         size={180}
                                         level="H"
                                         includeMargin={true}
