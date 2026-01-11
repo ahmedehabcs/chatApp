@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+Allow: /home
+Allow: /verify
+
+Disallow: /login
+Disallow: /register
+
+Disallow: /dashboard
+Disallow: /dashboard/add/
+
+Disallow: /api/
+Disallow: /server/
+Disallow: /node_modules/
+
+Sitemap: https://secure2ee.vercel.app/sitemap.xml
+
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
