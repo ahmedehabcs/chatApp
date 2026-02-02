@@ -8,15 +8,18 @@ import Footer from "../components/home/Footer";
 
 export default function LandingPage() {
 	return (
-		<main className="min-h-screen grass-dark text-[var(--color-text)]">
-			<AnimatedTriangles />
-			<AnimatedBubbles />
-			<Hero />
-			<Features />
-			<HowItWorks />
-			<Verification />
-			<CTA />
-			<Footer />
+		<main className="relative min-h-screen bg-black text-[var(--color-text)] overflow-x-hidden">
+			<div className="fixed inset-0 backdrop-blur-2xl pointer-events-none z-0" />
+			<div className="relative z-10">
+				<AnimatedTriangles />
+				<AnimatedBubbles />
+				<Hero />
+				<Features />
+				<HowItWorks />
+				<Verification />
+				<CTA />
+				<Footer />
+			</div>
 		</main>
 	);
 }
